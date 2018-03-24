@@ -1,0 +1,19 @@
+{
+  "name": "13game",
+  "version": "1.0.0",
+  "description": "Based on\r https://github.com/kittykatattack/ga",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/hek4te/13game.git"
+  },
+  "author": "Kasia",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/hek4te/13game/issues"
+  },
+  "homepage": "https://gitlab.com/hek4te/13game#README"
+}
