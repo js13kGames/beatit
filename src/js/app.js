@@ -2,7 +2,7 @@ var canvas = document.getElementById('game');
 var ctx = canvas.getContext('2d');
 var mainHero = new Image();
 mainHero.addEventListener('load',drawSetup, false);
-mainHero.src = 'cat.png';
+mainHero.src = 'hero.png';
 var enemiesNumber = 10;
 
 function drawSetup() {
