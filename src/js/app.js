@@ -16,20 +16,14 @@ var intervalRef,
 	hero = {
 		heroSliceX: 0,
 		heroSliceY: 0,
-		heroPositionX: 522,
+		heroPositionX: 515,
 		heroPositionY: 650,
+		spriteAnimationFrame: 1
 	},
 	livebar = {
 		live: 100,
 		positionX: 500,
 		positionY: 750
-	},
-	enemy = {
-		speed: 1,
-		direction: 1,
-		posX: 0, 
-		posY: 0,
-		vy: 1,
 	},
 	enemies = [];
 	
@@ -48,7 +42,8 @@ function setup() {
 	drawHero();
 	startHeroAnimation();
 	drawTextData();
-	drawEnemies(enemiesNumber);
+	createEnemies(enemiesNumber);
+	setInterval('drawEnemy()',100);
 }
 
 function drawHero(){
@@ -66,13 +61,11 @@ function drawHero(){
 
 	ctx.clearRect(515,650,100,100);
 
-	ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 76, 100, hero.heroPositionX, hero.heroPositionY, 76,100);
+	ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
 
-	hero.heroSliceX+=76;
-	hero.heroPositionX = 515;
+	hero.heroSliceX+=62;
 	if(hero.heroSliceX>=mainHero.width) {
 		hero.heroSliceX = 0;
-		hero.heroPositionX = 522;
 	}
 	ctx.restore();
 }
@@ -87,35 +80,44 @@ function drawTextData() {
 	if( livebar.live > 0 ){
 		for(var j = 1; j <= livebar.live; j++) {
 			drawLiveBar(j);
-		}
+		} 
 	}
 }
 
-function drawEnemy(positionX, positionY) {
+function createEnemy(positionX, positionY) {
 	/*
 		TODO:
 		- przeciwnicy nadlatują z lewej lub prawej, na losowej wysokości z różną prędkością
 		- grafika dla przeciwników
 		- dwa rodzaje przeciwników: mięsne i warzywne. Mięsne dodają punktów i życia, warzywne odbierają życie.
 	*/
+	var enemy = {
+		speed: 1,
+		direction: 1,
+		posX: 0, 
+		posY: 0,
+		vy: 1,
+	};
+
 	enemy.direction = getRandomInt(0.5,3);
 	enemy.vx = enemy.speed * enemy.direction;
-	enemy.posX += enemy.speed;
+	enemy.posX = 10;
 	positionX = enemy.posX;
 	enemy.posY = positionY;
 	
-	ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
-	ctx.fillStyle = '#a1a1a1';
-	ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
-	if(enemy.posX >= canvas.width) {
-		enemy.posX = 0;
-		ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
-	}	
+	// ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
+	// ctx.fillStyle = '#a1a1a1';
+	// ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
+	// if(enemy.posX >= canvas.width) {
+	// 	enemy.posX = 0;
+	// 	ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
+	// }	
 	
-	setTimeout('drawEnemy(enemy.posX, enemy.posY)',10);	
+	enemies.push(enemy);
+	// setTimeout('drawEnemy(enemy.posX, enemy.posY)',10);	
 }
 
-function drawEnemies(enemiesNumber){
+function createEnemies(enemiesNumber){
 	/*
 		TODO:
 		- push wrogów do tablicy enemies i uruchamianie pojedynczo
@@ -123,9 +125,23 @@ function drawEnemies(enemiesNumber){
 	for (var i = 0; i < enemiesNumber; i++) {
 		var positionX = 0,
 			positionY = getRandomInt(20, canvas.height - 200);
-		drawEnemy(positionX,positionY);
+		createEnemy(positionX,positionY);
 	}
 }
+
+function drawEnemy() {
+	enemies.forEach(function(enemy){
+		ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
+		ctx.fillStyle = '#a1a1a1';
+		ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
+		if(enemy.posX >= canvas.width) {
+			enemy.posX = 0;
+			ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
+		}
+		enemy.posX += enemy.speed;	
+	});
+}
+
 
 function startHeroAnimation() {
 	if(!intervalRef) {
@@ -137,7 +153,6 @@ function drawLiveBar(livePercent) {
 	ctx.fillStyle = '#000099';
 	ctx.fillRect(livebar.positionX+livePercent,livebar.positionY,1,20);
 }
-
 
 // Helpers
 function getRandomInt(min, max) {
