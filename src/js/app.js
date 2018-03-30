@@ -9,9 +9,9 @@ ctx.save();
 var mainHero = new Image();
 mainHero.src = 'hero_sprite.png';
 
-var intervalRef, 
+var intervalRef,
 	score = 0,
-	enemiesNumber = 6,
+	enemiesNumber = 10,
 	level = 1,
 	hero = {
 		heroSliceX: 0,
@@ -26,7 +26,7 @@ var intervalRef,
 		positionY: 750
 	},
 	enemies = [];
-	
+
 
 //eslint-disable-next-line no-unused-vars
 function init(){
@@ -57,12 +57,12 @@ function makeAction(event){
 function drawHero(){
 	ctx.save();
 	/*
-		TODO: 
+		TODO:
 		- akcje bohatera:
 		-- kliknięcie w obszar na mapie powoduje przemieszczenie się głowy bohatera w kliknięte miejsce. Jeśli głowa postaci i wróg znajdą się w tym samym czasie w miejscu kliknięcia, wtedy dostaje się punkty.
-		- poziom bohatera. Poziom zwiększa się na podstawie punktów. Im większy poziom tym większy: 
+		- poziom bohatera. Poziom zwiększa się na podstawie punktów. Im większy poziom tym większy:
 		-- zasięg postaci - jak daleko może chwycić wrogów (zaznaczyć na mapie okręgiem)
-		-- szybkość postaci - jak szybko głowa postaci dosięgnie 
+		-- szybkość postaci - jak szybko głowa postaci dosięgnie
 		- możliwość śmierci bohatera - roślina usycha. Roślina potrzebuję jedzenia żeby nie uschnąć. W miarę zwiększenia poziomu roślina potrzebuje więcej jedzenia i szybciej usycha.
 		- poziom życia bohatera (poziom wyschnięcia rośliny) - jako symboliczna "doniczka" w której zmniejsza się np. poziom wody.
 	*/
@@ -88,7 +88,7 @@ function drawTextData() {
 	if( livebar.live > 0 ){
 		for(var j = 1; j <= livebar.live; j++) {
 			drawLiveBar(j);
-		} 
+		}
 	}
 }
 
@@ -102,35 +102,35 @@ function createEnemy(positionX, positionY) {
 	var enemy = {
 		speed: 1,
 		direction: 1,
-		posX: 0, 
+		posX: 0,
 		posY: 0,
 		vMin: 1,
 		vMax: 10
 	};
 
-	enemy.direction = getRandomInt(0.5,3);
-	enemy.speed = getRandomInt(enemy.vMin,enemy.vMax);
-	enemy.posX = getRandomInt(-100,0);
+	enemy.direction = getRandomInt(0,2)-1;
+	enemy.speed = getRandomInt(enemy.vMin,enemy.vMax)*enemy.direction;
+	if(enemy.direction == -1){
+		enemy.posX = getRandomInt(canvas.width,canvas.width+100);
+	} else {
+		enemy.posX = getRandomInt(-100,0);
+	}
 	positionX = enemy.posX;
 	enemy.posY = positionY;
-	
+
 	// ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
 	// ctx.fillStyle = '#a1a1a1';
 	// ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
 	// if(enemy.posX >= canvas.width) {
 	// 	enemy.posX = 0;
 	// 	ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
-	// }	
-	
+	// }
+
 	enemies.push(enemy);
-	// setTimeout('drawEnemy(enemy.posX, enemy.posY)',10);	
+	// setTimeout('drawEnemy(enemy.posX, enemy.posY)',10);
 }
 
 function createEnemies(enemiesNumber){
-	/*
-		TODO:
-		- push wrogów do tablicy enemies i uruchamianie pojedynczo
-	*/
 	for (var i = 0; i < enemiesNumber; i++) {
 		var positionX = 0,
 			positionY = getRandomInt(20, canvas.height - 200);
@@ -141,15 +141,19 @@ function createEnemies(enemiesNumber){
 function drawEnemy() {
 	// ctx.clearRect(0,0,canvas.width, canvas.height - 180);
 	enemies.forEach(function(enemy){
-		ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
+		ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
 		ctx.fillStyle = '#a1a1a1';
 		ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
-		if(enemy.posX >= canvas.width) {
+		if(enemy.posX > canvas.width + 115) {
 			// if true - remove from array and genrate new one
 			enemy.posX = 0;
-			ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
+			ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
 		}
-		enemy.posX += enemy.speed;	
+		if(enemy.posX < -115) {
+			enemy.posX = canvas.width + 100;
+			ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
+		}
+		enemy.posX += enemy.speed;
 	});
 }
 
