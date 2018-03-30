@@ -18,7 +18,7 @@ var intervalRef,
 		heroSliceY: 0,
 		heroPositionX: 515,
 		heroPositionY: 650,
-		spriteAnimationFrame: 1
+		speed: 10
 	},
 	livebar = {
 		live: 100,
@@ -43,7 +43,15 @@ function setup() {
 	startHeroAnimation();
 	drawTextData();
 	createEnemies(enemiesNumber);
-	setInterval('drawEnemy()',100);
+	canvas.addEventListener('click',makeAction, false);
+	setInterval('drawEnemy()',50);
+}
+
+function makeAction(event){
+	var x = event.clientX - canvas.offsetLeft;
+	var y = event.clientY - canvas.offsetTop;
+	hero.heroPositionX = x;
+	hero.heroPositionY = y;
 }
 
 function drawHero(){
@@ -96,12 +104,13 @@ function createEnemy(positionX, positionY) {
 		direction: 1,
 		posX: 0, 
 		posY: 0,
-		vy: 1,
+		vMin: 1,
+		vMax: 10
 	};
 
 	enemy.direction = getRandomInt(0.5,3);
-	enemy.vx = enemy.speed * enemy.direction;
-	enemy.posX = 10;
+	enemy.speed = getRandomInt(enemy.vMin,enemy.vMax);
+	enemy.posX = getRandomInt(-100,0);
 	positionX = enemy.posX;
 	enemy.posY = positionY;
 	
@@ -130,11 +139,13 @@ function createEnemies(enemiesNumber){
 }
 
 function drawEnemy() {
+	// ctx.clearRect(0,0,canvas.width, canvas.height - 180);
 	enemies.forEach(function(enemy){
 		ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
 		ctx.fillStyle = '#a1a1a1';
 		ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
 		if(enemy.posX >= canvas.width) {
+			// if true - remove from array and genrate new one
 			enemy.posX = 0;
 			ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
 		}
