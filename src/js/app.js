@@ -1,5 +1,7 @@
 'use strict';
 
+/* eslint-disable no-unused-vars */
+
 var canvas = document.getElementById('game');
 canvas.style.backgroundColor = 'antiquewhite';
 canvas.style.border = '10px solid #0a0a0a';
@@ -9,8 +11,7 @@ ctx.save();
 var mainHero = new Image();
 mainHero.src = 'hero_sprite.png';
 
-var intervalRef,
-	score = 0,
+var score = 0,
 	enemiesNumber = 10,
 	level = 1,
 	hero = {
@@ -18,6 +19,8 @@ var intervalRef,
 		heroSliceY: 0,
 		heroPositionX: 515,
 		heroPositionY: 650,
+		positionX: 515,
+		positionY: 650,
 		speed: 10
 	},
 	livebar = {
@@ -25,10 +28,10 @@ var intervalRef,
 		positionX: 500,
 		positionY: 750
 	},
-	enemies = [];
+	enemies = [],
+	speedTick = 0;
 
 
-//eslint-disable-next-line no-unused-vars
 function init(){
 	/*
 		TODO:
@@ -39,23 +42,21 @@ function init(){
 }
 
 function setup() {
-	drawHero();
-	startHeroAnimation();
 	drawTextData();
 	createEnemies(enemiesNumber);
 	canvas.addEventListener('click',makeAction, false);
-	setInterval('drawEnemy()',50);
+	gameLoop ();
 }
 
-function makeAction(event){
-	var x = event.clientX - canvas.offsetLeft;
-	var y = event.clientY - canvas.offsetTop;
-	hero.heroPositionX = x;
-	hero.heroPositionY = y;
+function gameLoop () {
+
+	window.requestAnimationFrame(gameLoop);
+	
+	drawHero();
+	drawEnemy();
 }
 
 function drawHero(){
-	ctx.save();
 	/*
 		TODO:
 		- akcje bohatera:
@@ -66,16 +67,89 @@ function drawHero(){
 		- możliwość śmierci bohatera - roślina usycha. Roślina potrzebuję jedzenia żeby nie uschnąć. W miarę zwiększenia poziomu roślina potrzebuje więcej jedzenia i szybciej usycha.
 		- poziom życia bohatera (poziom wyschnięcia rośliny) - jako symboliczna "doniczka" w której zmniejsza się np. poziom wody.
 	*/
+	speedTick += 1;
 
-	ctx.clearRect(515,650,100,100);
+	if((speedTick % 10 === 0) || (speedTick === 0)){
 
-	ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
+		ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
+		
+		ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
+		
+		hero.heroSliceX+=62;
+		if(hero.heroSliceX>=mainHero.width) {
+			hero.heroSliceX = 0;
+		}
 
-	hero.heroSliceX+=62;
-	if(hero.heroSliceX>=mainHero.width) {
-		hero.heroSliceX = 0;
+		speedTick = 1;
 	}
-	ctx.restore();
+}
+
+function makeAction(event){
+	speedTick = -500;
+	ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
+	ctx.drawImage(mainHero, 124, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
+	//correct the cords, so clicked cords was the middle of head
+	var x = event.clientX - canvas.offsetLeft - 35;
+	var y = event.clientY - canvas.offsetTop - 35;
+	ctx.clearRect(515,650,62,100);
+	/*
+		TODO:
+		- użyć bezierCurveTo zamiast line
+	*/
+	ctx.beginPath();
+	ctx.moveTo(530, 750);
+	ctx.lineWidth = 1;
+	ctx.lineTo(x + 16, y + 100);
+	ctx.strokeStyle = '#020601';
+	ctx.stroke();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.moveTo(545, 750);
+	ctx.lineTo(x + 31, y + 100);
+	ctx.strokeStyle = '#020601';
+	ctx.stroke();
+	ctx.closePath();
+	
+	ctx.beginPath();
+	ctx.moveTo(531, 750);
+	ctx.lineTo(x + 16, y + 100);
+	ctx.lineTo(x + 30, y+ 100);
+	ctx.lineTo(544, 750);
+	ctx.lineTo(531,750);
+	ctx.closePath();
+	ctx.fillStyle='#285a10';
+	ctx.fill();
+	
+	
+	hero.heroPositionX = x;
+	hero.heroPositionY = y;
+
+	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
+	
+	setTimeout(function(){
+		ctx.clearRect(0, 0, canvas.width, livebar.positionY);
+		// ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
+		hero.heroPositionX = hero.positionX;
+		hero.heroPositionY = hero.positionY;
+	},500);
+}
+
+function checkColision(heroHeadPositionX, heroHeadPositionY){
+	ctx.fillStyle = 'red';
+	ctx.fillRect(heroHeadPositionX, heroHeadPositionY, 5, 5);
+	enemies.forEach(function(enemy, index) {
+		if(
+			((enemy.posX >= heroHeadPositionX - 20) && (enemy.posX <= heroHeadPositionX + 20)) &&
+			((enemy.posY >= heroHeadPositionY - 20) && (enemy.posY <= heroHeadPositionY + 20)) 
+		) { 
+			enemies.splice(index, 1);
+			score = Math.round(score + 1 * enemy.speed);
+			ctx.clearRect(livebar.positionX - 70, livebar.positionY, 500, 40);
+			drawTextData();
+			createEnemy();
+		}
+	});
 }
 
 function drawTextData() {
@@ -92,54 +166,44 @@ function drawTextData() {
 	}
 }
 
-function createEnemy(positionX, positionY) {
+function createEnemy() {
 	/*
 		TODO:
-		- przeciwnicy nadlatują z lewej lub prawej, na losowej wysokości z różną prędkością
+		- przeciwnicy nadlatują z lewej lub prawej, na losowej wysokości z różną prędkością - done
 		- grafika dla przeciwników
 		- dwa rodzaje przeciwników: mięsne i warzywne. Mięsne dodają punktów i życia, warzywne odbierają życie.
 	*/
 	var enemy = {
 		speed: 1,
+		speedDirect: 1,
 		direction: 1,
 		posX: 0,
 		posY: 0,
-		vMin: 1,
-		vMax: 10
+		vMin: 0.5,
+		vMax: 4
 	};
 
 	enemy.direction = getRandomInt(0,2)-1;
-	enemy.speed = getRandomInt(enemy.vMin,enemy.vMax)*enemy.direction;
+	if(enemy.direction === 0) enemy.direction = -1;
+	enemy.speed = getRandomInt(enemy.vMin,enemy.vMax);
+	enemy.speedDirect = enemy.speed * enemy.direction;
 	if(enemy.direction == -1){
 		enemy.posX = getRandomInt(canvas.width,canvas.width+100);
 	} else {
 		enemy.posX = getRandomInt(-100,0);
 	}
-	positionX = enemy.posX;
-	enemy.posY = positionY;
-
-	// ctx.clearRect(enemy.posX - 15, enemy.posY, 15, 15);
-	// ctx.fillStyle = '#a1a1a1';
-	// ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
-	// if(enemy.posX >= canvas.width) {
-	// 	enemy.posX = 0;
-	// 	ctx.clearRect(enemy.posX -15, enemy.posY, 15, 15);
-	// }
+	enemy.posY = getRandomInt(20, canvas.height - 200);
 
 	enemies.push(enemy);
-	// setTimeout('drawEnemy(enemy.posX, enemy.posY)',10);
 }
 
 function createEnemies(enemiesNumber){
 	for (var i = 0; i < enemiesNumber; i++) {
-		var positionX = 0,
-			positionY = getRandomInt(20, canvas.height - 200);
-		createEnemy(positionX,positionY);
+		createEnemy();
 	}
 }
 
 function drawEnemy() {
-	// ctx.clearRect(0,0,canvas.width, canvas.height - 180);
 	enemies.forEach(function(enemy){
 		ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
 		ctx.fillStyle = '#a1a1a1';
@@ -153,16 +217,10 @@ function drawEnemy() {
 			enemy.posX = canvas.width + 100;
 			ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
 		}
-		enemy.posX += enemy.speed;
+		enemy.posX += enemy.speedDirect;
 	});
 }
 
-
-function startHeroAnimation() {
-	if(!intervalRef) {
-		setInterval('drawHero() ',300);
-	}
-}
 
 function drawLiveBar(livePercent) {
 	ctx.fillStyle = '#000099';
