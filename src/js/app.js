@@ -11,6 +11,9 @@ ctx.save();
 var mainHero = new Image();
 mainHero.src = 'hero_sprite.png';
 
+var enemiesSprite = new Image();
+enemiesSprite.src = 'food_sprite.png';
+
 var score = 0,
 	enemiesNumber = 10,
 	level = 1,
@@ -180,7 +183,8 @@ function createEnemy() {
 		posX: 0,
 		posY: 0,
 		vMin: 0.5,
-		vMax: 4
+		vMax: 4,
+		imageStage: 1
 	};
 
 	enemy.direction = getRandomInt(0,2)-1;
@@ -193,6 +197,7 @@ function createEnemy() {
 		enemy.posX = getRandomInt(-100,0);
 	}
 	enemy.posY = getRandomInt(20, canvas.height - 200);
+	enemy.imageStage = getRandomInt(0,4);
 
 	enemies.push(enemy);
 }
@@ -205,9 +210,9 @@ function createEnemies(enemiesNumber){
 
 function drawEnemy() {
 	enemies.forEach(function(enemy){
+		ctx.clearRect(enemy.posX, enemy.posY, 15, 15);
 		ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
-		ctx.fillStyle = '#a1a1a1';
-		ctx.fillRect(enemy.posX, enemy.posY, 15, 15);
+		ctx.drawImage(enemiesSprite, enemy.imageStage * 15, 0 , 15, 15, enemy.posX, enemy.posY, 15, 15);
 		if(enemy.posX > canvas.width + 115) {
 			// if true - remove from array and genrate new one
 			enemy.posX = 0;
