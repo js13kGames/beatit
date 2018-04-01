@@ -54,7 +54,7 @@ function setup() {
 function gameLoop () {
 
 	window.requestAnimationFrame(gameLoop);
-	
+	// ctx.clear ()
 	drawHero();
 	drawEnemy();
 }
@@ -75,7 +75,7 @@ function drawHero(){
 	if((speedTick % 10 === 0) || (speedTick === 0)){
 
 		ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
-		
+		//!move clear and Draw below if statement
 		ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
 		
 		hero.heroSliceX+=62;
