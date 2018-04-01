@@ -47,14 +47,14 @@ function init(){
 function setup() {
 	drawTextData();
 	createEnemies(enemiesNumber);
-	canvas.addEventListener('click',makeAction, false);
+	canvas.addEventListener('click', makeAction, false);
 	gameLoop ();
 }
 
 function gameLoop () {
-
+	
 	window.requestAnimationFrame(gameLoop);
-	// ctx.clear ()
+	ctx.clearRect(0, 0, canvas.width, livebar.positionY);
 	drawHero();
 	drawEnemy();
 }
@@ -72,11 +72,10 @@ function drawHero(){
 	*/
 	speedTick += 1;
 
-	if((speedTick % 10 === 0) || (speedTick === 0)){
+	ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
+	ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
 
-		ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
-		//!move clear and Draw below if statement
-		ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
+	if((speedTick % 10 === 0) || (speedTick === 0)){
 		
 		hero.heroSliceX+=62;
 		if(hero.heroSliceX>=mainHero.width) {
@@ -89,12 +88,12 @@ function drawHero(){
 
 function makeAction(event){
 	speedTick = -500;
-	ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
+	// ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
 	ctx.drawImage(mainHero, 124, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
 	//correct the cords, so clicked cords was the middle of head
-	var x = event.clientX - canvas.offsetLeft - 35;
-	var y = event.clientY - canvas.offsetTop - 35;
-	ctx.clearRect(515,650,62,100);
+	var x = event.clientX - canvas.offsetLeft - 45;
+	var y = event.clientY - canvas.offsetTop - 45;
+	// ctx.clearRect(515,650,62,100);
 	/*
 		TODO:
 		- użyć bezierCurveTo zamiast line
@@ -131,8 +130,6 @@ function makeAction(event){
 	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
 	
 	setTimeout(function(){
-		ctx.clearRect(0, 0, canvas.width, livebar.positionY);
-		// ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
 		hero.heroPositionX = hero.positionX;
 		hero.heroPositionY = hero.positionY;
 	},500);
@@ -209,20 +206,13 @@ function createEnemies(enemiesNumber){
 }
 
 function drawEnemy() {
-	enemies.forEach(function(enemy){
-		ctx.clearRect(enemy.posX, enemy.posY, 15, 15);
-		ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
+	enemies.forEach(function(enemy, index){
 		ctx.drawImage(enemiesSprite, enemy.imageStage * 15, 0 , 15, 15, enemy.posX, enemy.posY, 15, 15);
-		if(enemy.posX > canvas.width + 115) {
-			// if true - remove from array and genrate new one
-			enemy.posX = 0;
-			ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
-		}
-		if(enemy.posX < -115) {
-			enemy.posX = canvas.width + 100;
-			ctx.clearRect(enemy.posX - 15 * enemy.direction, enemy.posY, 15, 15);
-		}
 		enemy.posX += enemy.speedDirect;
+		if((enemy.posX > canvas.width + 15)||(enemy.posX < -15)) {
+			enemies.splice(index, 1);
+			createEnemy();
+		}
 	});
 }
 
