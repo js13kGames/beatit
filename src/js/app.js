@@ -24,6 +24,8 @@ var score = 0,
 		heroPositionY: 650,
 		positionX: 515,
 		positionY: 650,
+		moveToX: 515,
+		moveToY: 650, 
 		speed: 10
 	},
 	livebar = {
@@ -54,6 +56,7 @@ function setup() {
 function gameLoop () {
 	
 	window.requestAnimationFrame(gameLoop);
+
 	ctx.clearRect(0, 0, canvas.width, livebar.positionY);
 	drawHero();
 	drawEnemy();
@@ -75,6 +78,7 @@ function drawHero(){
 	ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
 	ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
 
+	
 	if((speedTick % 10 === 0) || (speedTick === 0)){
 		
 		hero.heroSliceX+=62;
@@ -84,54 +88,48 @@ function drawHero(){
 
 		speedTick = 1;
 	}
-}
 
-function makeAction(event){
-	speedTick = -500;
-	// ctx.clearRect(hero.heroPositionX,hero.heroPositionY,62,100);
-	ctx.drawImage(mainHero, 124, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62,100);
-	//correct the cords, so clicked cords was the middle of head
-	var x = event.clientX - canvas.offsetLeft - 45;
-	var y = event.clientY - canvas.offsetTop - 45;
-	// ctx.clearRect(515,650,62,100);
 	/*
 		TODO:
 		- użyć bezierCurveTo zamiast line
 	*/
 	ctx.beginPath();
-	ctx.moveTo(530, 750);
 	ctx.lineWidth = 1;
-	ctx.lineTo(x + 16, y + 100);
+	ctx.moveTo(hero.positionX + 15, hero.positionY + 100);
+	ctx.lineTo(hero.moveToX + 16,  hero.moveToY + 100);
+
+	ctx.moveTo(hero.positionX + 30, hero.positionY + 100);
+	ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
 	ctx.strokeStyle = '#020601';
 	ctx.stroke();
 	ctx.closePath();
 	
 	ctx.beginPath();
-	ctx.moveTo(545, 750);
-	ctx.lineTo(x + 31, y + 100);
-	ctx.strokeStyle = '#020601';
-	ctx.stroke();
-	ctx.closePath();
-	
-	ctx.beginPath();
-	ctx.moveTo(531, 750);
-	ctx.lineTo(x + 16, y + 100);
-	ctx.lineTo(x + 30, y+ 100);
-	ctx.lineTo(544, 750);
-	ctx.lineTo(531,750);
+	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
+	ctx.lineTo(hero.moveToX + 16, hero.moveToY + 100);
+	ctx.lineTo(hero.moveToX + 30, hero.moveToY + 100);
+	ctx.lineTo(hero.positionX + 29, hero.positionY + 100);
+	ctx.lineTo(hero.positionX + 16,hero.positionY + 100);
 	ctx.closePath();
 	ctx.fillStyle='#285a10';
 	ctx.fill();
-	
-	
-	hero.heroPositionX = x;
-	hero.heroPositionY = y;
+}
+
+function makeAction(event){
+	//correct the cords, so clicked cords was the middle of head
+	hero.moveToX = event.clientX - canvas.offsetLeft - 45;
+	hero.moveToY = event.clientY - canvas.offsetTop - 45;
+
+	hero.heroPositionX = hero.moveToX;
+	hero.heroPositionY = hero.moveToY;
 
 	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
 	
 	setTimeout(function(){
 		hero.heroPositionX = hero.positionX;
 		hero.heroPositionY = hero.positionY;
+		hero.moveToX = hero.positionX;
+		hero.moveToY = hero.positionY;
 	},500);
 }
 
@@ -194,7 +192,7 @@ function createEnemy() {
 		enemy.posX = getRandomInt(-100,0);
 	}
 	enemy.posY = getRandomInt(20, canvas.height - 200);
-	enemy.imageStage = getRandomInt(0,4);
+	enemy.imageStage = getRandomInt(0,8);
 
 	enemies.push(enemy);
 }
