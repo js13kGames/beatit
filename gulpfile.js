@@ -62,7 +62,7 @@ gulp.task('build-assets', (done) => {
 
 gulp.task('zip', (done) => {
 	return gulp.src('./build/**/*')
-		.pipe(zip('entry.zip')) //gulp-zip performs compression by default
+		.pipe(zip('beatit.zip')) //gulp-zip performs compression by default
 		.pipe(gulp.dest('dist'));
 });
 
