@@ -130,29 +130,22 @@ function drawHero(){
 
 	/*
 		TODO:
-		- użyć bezierCurveTo zamiast line
+		- użyć bezierCurveTo zamiast line - DONE
+		- poprawic dolne punkty kontrolne
 	*/
 	ctx.beginPath();
 	ctx.lineWidth = 1;
-	ctx.moveTo(hero.positionX + 15, hero.positionY + 100);
-	// ctx.lineTo(hero.moveToX + 16,  hero.moveToY + 100);
-	ctx.bezierCurveTo(hero.positionX + 15, hero.positionY + 100, hero.moveToX + 16,  hero.moveToY + 200, hero.moveToX + 16, hero.moveToY + 100);
-	ctx.moveTo(hero.positionX + 30, hero.positionY + 100);
-	ctx.bezierCurveTo(hero.positionX + 30, hero.positionY + 100, hero.moveToX + 31,  hero.moveToY + 200, hero.moveToX + 31, hero.moveToY + 100);
-	// ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
+	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
+	// bezierCurveTo(cp1x, cp1y, cp2x, cp2y, x, y)
+	ctx.bezierCurveTo(hero.positionX + 16, hero.positionY , hero.moveToX + 16, hero.moveToY + 200, hero.moveToX + 16, hero.moveToY + 100);
+	ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
+	ctx.bezierCurveTo(hero.moveToX + 31, hero.moveToY + 200, hero.positionX + 31, hero.positionY, hero.positionX + 31, hero.positionY + 100);
+	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
 	ctx.strokeStyle = '#020601';
 	ctx.stroke();
 	ctx.closePath();
-	
-	// ctx.beginPath();
-	// ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
-	// ctx.lineTo(hero.moveToX + 16, hero.moveToY + 100);
-	// ctx.lineTo(hero.moveToX + 30, hero.moveToY + 100);
-	// ctx.lineTo(hero.positionX + 29, hero.positionY + 100);
-	// ctx.lineTo(hero.positionX + 16,hero.positionY + 100);
-	// ctx.closePath();
-	// ctx.fillStyle='#285a10';
-	// ctx.fill();
+	ctx.fillStyle='#285a10';
+	ctx.fill();
 }
 
 function makeAction(event){
