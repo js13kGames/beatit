@@ -3,7 +3,6 @@
 /* eslint-disable no-unused-vars */
 
 var canvas = document.getElementById('game');
-canvas.style.backgroundColor = 'antiquewhite';
 canvas.style.border = '10px solid #0a0a0a';
 var ctx = canvas.getContext('2d');
 ctx.save();
@@ -14,42 +13,82 @@ mainHero.src = 'hero_sprite.png';
 var enemiesSprite = new Image();
 enemiesSprite.src = 'food_sprite.png';
 
+/*
+TODO:
+- change every Y position to canvas.height - ...
+*/
 var score = 0,
-	enemiesNumber = 10,
-	level = 1,
-	hero = {
-		heroSliceX: 0,
-		heroSliceY: 0,
-		heroPositionX: 515,
-		heroPositionY: 650,
-		positionX: 515,
-		positionY: 650,
-		moveToX: 515,
-		moveToY: 650, 
-		speed: 10
-	},
-	livebar = {
-		live: 100,
-		positionX: 500,
-		positionY: 750
-	},
-	enemies = [],
-	speedTick = 0;
+enemiesNumber = 10,
+level = 1,
+hero = {
+	heroSliceX: 0,
+	heroSliceY: 0,
+	heroPositionX: 515,
+	heroPositionY: 650,
+	positionX: 515,
+	positionY: 650,
+	moveToX: 515,
+	moveToY: 650, 
+	speed: 10
+},
+livebar = {
+	live: 100,
+	positionX: 500,
+	positionY: 750
+},
+enemies = [],
+speedTick = 0;
 
 
 function init(){
 	/*
-		TODO:
-		- licznik punktów (+ zapis w localstorage)
-		- ekran startowy gry (+ komiks przedstawiający fabułę)
+	TODO:
+	- licznik punktów (+ zapis w localstorage)
+	- ekran startowy gry (+ komiks przedstawiający fabułę)
 	*/
+	canvas.style.backgroundColor = '#61c46a';
+
+	var startButton = {
+		x:canvas.width / 2 - 100,
+		y:canvas.height / 2 - 25,
+		width:200,
+		height:50
+	};
+
+	ctx.fillStyle = '#61c46a';
+	ctx.fillRect(startButton.x, startButton.y , startButton.width, startButton.height);
+	ctx.lineWidth = 4;
+	ctx.strokeStyle = '#ffffff';
+	ctx.strokeRect(startButton.x, startButton.y , startButton.width, startButton.height);
+
+	ctx.fillStyle = '#ffffff';
+	ctx.font = '30px monospace';
+	ctx.fillText('START GAME',canvas.width / 2 - 80, canvas.height / 2 + 8);
+
+	canvas.addEventListener('click', function(evt) {
+		var mousePos = getMousePos(canvas, evt);
+		if (isInside(mousePos,startButton)) {
+			startGame();
+		}
+	}, false);
+}
+
+function playTutorial() {
+	/* 
+		TODO
+	*/
+}
+
+function startGame(){
+	// ctx.clearRect(0, 0, canvas.width, canvas.height);
+	canvas.style.backgroundColor = 'antiquewhite';
 	setup();
 }
 
 function setup() {
 	drawTextData();
 	createEnemies(enemiesNumber);
-	canvas.addEventListener('click', makeAction, false);
+	canvas.addEventListener('click', makeAction, true);
 	gameLoop ();
 }
 
@@ -96,29 +135,30 @@ function drawHero(){
 	ctx.beginPath();
 	ctx.lineWidth = 1;
 	ctx.moveTo(hero.positionX + 15, hero.positionY + 100);
-	ctx.lineTo(hero.moveToX + 16,  hero.moveToY + 100);
-
+	// ctx.lineTo(hero.moveToX + 16,  hero.moveToY + 100);
+	ctx.bezierCurveTo(hero.positionX + 15, hero.positionY + 100, hero.moveToX + 16,  hero.moveToY + 200, hero.moveToX + 16, hero.moveToY + 100);
 	ctx.moveTo(hero.positionX + 30, hero.positionY + 100);
-	ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
+	ctx.bezierCurveTo(hero.positionX + 30, hero.positionY + 100, hero.moveToX + 31,  hero.moveToY + 200, hero.moveToX + 31, hero.moveToY + 100);
+	// ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
 	ctx.strokeStyle = '#020601';
 	ctx.stroke();
 	ctx.closePath();
 	
-	ctx.beginPath();
-	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
-	ctx.lineTo(hero.moveToX + 16, hero.moveToY + 100);
-	ctx.lineTo(hero.moveToX + 30, hero.moveToY + 100);
-	ctx.lineTo(hero.positionX + 29, hero.positionY + 100);
-	ctx.lineTo(hero.positionX + 16,hero.positionY + 100);
-	ctx.closePath();
-	ctx.fillStyle='#285a10';
-	ctx.fill();
+	// ctx.beginPath();
+	// ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
+	// ctx.lineTo(hero.moveToX + 16, hero.moveToY + 100);
+	// ctx.lineTo(hero.moveToX + 30, hero.moveToY + 100);
+	// ctx.lineTo(hero.positionX + 29, hero.positionY + 100);
+	// ctx.lineTo(hero.positionX + 16,hero.positionY + 100);
+	// ctx.closePath();
+	// ctx.fillStyle='#285a10';
+	// ctx.fill();
 }
 
 function makeAction(event){
 	//correct the cords, so clicked cords was the middle of head
 	hero.moveToX = event.clientX - canvas.offsetLeft - 45;
-	hero.moveToY = event.clientY - canvas.offsetTop - 45;
+	hero.moveToY = event.clientY - canvas.offsetTop + 45;
 
 	hero.heroPositionX = hero.moveToX;
 	hero.heroPositionY = hero.moveToY;
@@ -134,8 +174,6 @@ function makeAction(event){
 }
 
 function checkColision(heroHeadPositionX, heroHeadPositionY){
-	ctx.fillStyle = 'red';
-	ctx.fillRect(heroHeadPositionX, heroHeadPositionY, 5, 5);
 	enemies.forEach(function(enemy, index) {
 		if(
 			((enemy.posX >= heroHeadPositionX - 20) && (enemy.posX <= heroHeadPositionX + 20)) &&
@@ -223,4 +261,16 @@ function drawLiveBar(livePercent) {
 // Helpers
 function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getMousePos(canvas, event) {
+    var rect = canvas.getBoundingClientRect();
+    return {
+        x: event.clientX - rect.left,
+        y: event.clientY - rect.top
+    };
+}
+
+function isInside(pos, rect){
+    return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y;
 }
