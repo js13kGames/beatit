@@ -67,7 +67,7 @@ gulp.task('zip', (done) => {
 });
 
 gulp.task('check', gulp.series('zip', (done) => {
-	var stats = fs.statSync("./dist/entry.zip")
+	var stats = fs.statSync("./dist/beatit.zip")
 	var fileSize = stats.size;
 	if (fileSize > 13312) {
 		console.log(error("Your zip compressed game is larger than 13kb (13312 bytes)!"))

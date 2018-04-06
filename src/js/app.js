@@ -3,7 +3,6 @@
 /* eslint-disable no-unused-vars */
 
 var canvas = document.getElementById('game');
-canvas.style.backgroundColor = 'antiquewhite';
 canvas.style.border = '10px solid #0a0a0a';
 var ctx = canvas.getContext('2d');
 ctx.save();
@@ -14,59 +13,167 @@ mainHero.src = 'hero_sprite.png';
 var enemiesSprite = new Image();
 enemiesSprite.src = 'food_sprite.png';
 
+/*
+TODO:
+- change every Y position to canvas.height - ...
+*/
+
 var score = 0,
-	enemiesNumber = 10,
+	enemiesNumber = 20,
 	level = 1,
 	hero = {
 		heroSliceX: 0,
 		heroSliceY: 0,
-		heroPositionX: 515,
-		heroPositionY: 650,
-		positionX: 515,
-		positionY: 650,
-		moveToX: 515,
-		moveToY: 650, 
+		heroPositionX: canvas.width / 2 + 3,
+		heroPositionY: canvas.height - 150,
+		positionX: canvas.width / 2 + 3,
+		positionY: canvas.height - 150,
+		moveToX: canvas.width / 2 + 3,
+		moveToY: canvas.height - 150, 
 		speed: 10
 	},
 	livebar = {
 		live: 100,
-		positionX: 500,
-		positionY: 750
+		positionX: 100,
+		positionY: canvas.height - 40
 	},
 	enemies = [],
 	speedTick = 0;
 
+var stop = false, 
+	frameCount = 0,
+	results = document.querySelector('#fps'),
+	fps, fpsInterval, startTime, now, then, elapsed;
 
 function init(){
 	/*
-		TODO:
-		- licznik punktów (+ zapis w localstorage)
-		- ekran startowy gry (+ komiks przedstawiający fabułę)
+	TODO:
+	- licznik punktów (+ zapis w localstorage)
+	- ekran startowy gry (+ komiks przedstawiający fabułę)
 	*/
-	setup();
-}
+	canvas.style.backgroundColor = '#61c46a';
 
-function setup() {
-	drawTextData();
+	drawLogo();
+	drawButtons();
 	createEnemies(enemiesNumber);
-	canvas.addEventListener('click', makeAction, false);
-	gameLoop ();
 }
 
-function gameLoop () {
-	
-	window.requestAnimationFrame(gameLoop);
+function drawLogo() {
+	ctx.save();
+	ctx.fillStyle = '#ffffff';
+	ctx.font = 'bold 140px Arial';
+	ctx.rotate(-Math.PI/10);
+	ctx.fillText('B',canvas.width / 2 - 250, canvas.height / 2 );
+	ctx.restore();
+	ctx.fillStyle = '#09437f';
+	ctx.font = 'bold 100px Arial';
+	ctx.fillText('Eat',canvas.width / 2 - 85, canvas.height / 2 - 130);
+	ctx.fillStyle = '#007108';
+	ctx.font = 'bold 140px Arial';
+	ctx.fillText('It',canvas.width / 2 + 75, canvas.height / 2 - 115);
+}
 
-	ctx.clearRect(0, 0, canvas.width, livebar.positionY);
+function drawButtons(){
+	var startButton = {
+		x:canvas.width / 2 - 120,
+		y:canvas.height / 2 - 25,
+		width:240,
+		height:50
+	};
+	generateButton(startButton, 'START GAME', -80, 8, 'big');
+
+
+	var playTutorialButton = {
+		x:canvas.width / 2 - 100,
+		y:canvas.height / 2 + 60,
+		width:200,
+		height:50
+	};
+	generateButton(playTutorialButton, 'SHOW TUTORIAL', -70, 90, 'small');
+
+	var showHighscoresButton = {
+		x:canvas.width / 2 - 100,
+		y:canvas.height / 2 + 120,
+		width:200,
+		height:50
+	};
+	generateButton(showHighscoresButton, 'HIGHSCORES', -55, 150, 'small');
+
+	var aboutButton = {
+		x:canvas.width / 2 - 100,
+		y:canvas.height / 2 + 180,
+		width:200,
+		height:50
+	}; 
+	generateButton(aboutButton, 'ABOUT', -30, 210, 'small');
+
+	canvas.addEventListener('click',  function(event) {
+		var mousePos = getMousePos(canvas, event);
+		if (isInside(mousePos,startButton)) {
+			startGame();
+			canvas.removeEventListener('click',  this , false); 
+		}
+		if (isInside(mousePos,showHighscoresButton)) {
+			getHighScores();
+			canvas.removeEventListener('click',  this , false);
+		}
+	}, false);
+}
+
+
+function generateButton(btnObject, btnText, textOffsetX, textOffsetY, btnStyle){
+	var btn =  btnObject;
+
+	ctx.fillStyle = '#61c46a';
+	ctx.fillRect(btn.x, btn.y , btn.width, btn.height);
+	if(btnStyle === 'small'){
+		ctx.lineWidth = 2;
+		ctx.font = '20px monospace';
+	} else {
+		ctx.lineWidth = 4;
+		ctx.font = '30px monospace';
+	}
+	ctx.strokeStyle = '#ffffff';
+	ctx.strokeRect(btn.x, btn.y , btn.width, btn.height);
+
+	ctx.fillStyle = '#ffffff';
+	ctx.fillText(btnText, canvas.width / 2 + textOffsetX, canvas.height / 2 + textOffsetY);
+}
+
+function getHighScores(){
+	/* 
+		TODO
+	*/
+	var highscores = localStorage.getItem('scores') || [];
+	console.log(highscores);
+}
+
+function playTutorial() {
+	/* 
+		TODO
+	*/
+}
+
+function startGame(){
+	canvas.style.backgroundColor = 'antiquewhite';
+	drawTextData();
+	// createEnemies(enemiesNumber); - remove button listener first!!
+	canvas.addEventListener('click', makeAction, false);
+	startAnimating(60);
+}
+
+function gameLoop() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	drawHero();
-	drawEnemy();
+	drawEnemies();
+	drawTextData();
 }
 
 function drawHero(){
 	/*
 		TODO:
 		- akcje bohatera:
-		-- kliknięcie w obszar na mapie powoduje przemieszczenie się głowy bohatera w kliknięte miejsce. Jeśli głowa postaci i wróg znajdą się w tym samym czasie w miejscu kliknięcia, wtedy dostaje się punkty.
+		-- kliknięcie w obszar na mapie powoduje przemieszczenie się głowy bohatera w kliknięte miejsce. Jeśli głowa postaci i wróg znajdą się w tym samym czasie w miejscu kliknięcia, wtedy dostaje się punkty. - DONE
 		- poziom bohatera. Poziom zwiększa się na podstawie punktów. Im większy poziom tym większy:
 		-- zasięg postaci - jak daleko może chwycić wrogów (zaznaczyć na mapie okręgiem)
 		-- szybkość postaci - jak szybko głowa postaci dosięgnie
@@ -89,42 +196,53 @@ function drawHero(){
 		speedTick = 1;
 	}
 
-	/*
-		TODO:
-		- użyć bezierCurveTo zamiast line
-	*/
+	//beam
 	ctx.beginPath();
 	ctx.lineWidth = 1;
-	ctx.moveTo(hero.positionX + 15, hero.positionY + 100);
-	ctx.lineTo(hero.moveToX + 16,  hero.moveToY + 100);
-
-	ctx.moveTo(hero.positionX + 30, hero.positionY + 100);
+	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
+	if(hero.moveToY < hero.positionY){
+		ctx.bezierCurveTo(hero.positionX + 16, hero.positionY , hero.moveToX + 16, hero.moveToY + 200, hero.moveToX + 16, hero.moveToY + 100);
+	} 
 	ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
+	if(hero.moveToY < hero.positionY){
+		ctx.bezierCurveTo(hero.moveToX + 31, hero.moveToY + 200, hero.positionX + 31, hero.positionY, hero.positionX + 31, hero.positionY + 100);
+	}
+	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
 	ctx.strokeStyle = '#020601';
 	ctx.stroke();
 	ctx.closePath();
-	
-	ctx.beginPath();
-	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
-	ctx.lineTo(hero.moveToX + 16, hero.moveToY + 100);
-	ctx.lineTo(hero.moveToX + 30, hero.moveToY + 100);
-	ctx.lineTo(hero.positionX + 29, hero.positionY + 100);
-	ctx.lineTo(hero.positionX + 16,hero.positionY + 100);
-	ctx.closePath();
 	ctx.fillStyle='#285a10';
 	ctx.fill();
+
+	//pot
+	ctx.beginPath();
+	ctx.moveTo(hero.positionX - 50, hero.positionY + 100);
+	ctx.lineTo(hero.positionX + 111, hero.positionY + 100);
+	ctx.lineTo(hero.positionX + 101, hero.positionY + 110);
+	ctx.lineTo(hero.positionX + 90, canvas.height);
+	ctx.lineTo(hero.positionX - 29, canvas.height);
+	ctx.lineTo(hero.positionX - 39, hero.positionY + 110);
+	ctx.closePath();
+	ctx.fillStyle='#7c2c04';
+	ctx.fill();
+
 }
 
 function makeAction(event){
-	//correct the cords, so clicked cords was the middle of head
-	hero.moveToX = event.clientX - canvas.offsetLeft - 45;
-	hero.moveToY = event.clientY - canvas.offsetTop - 45;
-
+	var mousePos = getMousePos(canvas, event);
+	//correct the cords (45 px), so clicked cords was the middle of head
+	hero.moveToX = mousePos.x - 45;
+	hero.moveToY = mousePos.y - 45;
+	
 	hero.heroPositionX = hero.moveToX;
 	hero.heroPositionY = hero.moveToY;
 
 	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
 	
+	/*
+		TODO:
+		- remove setTimeout!!
+	*/
 	setTimeout(function(){
 		hero.heroPositionX = hero.positionX;
 		hero.heroPositionY = hero.positionY;
@@ -134,8 +252,6 @@ function makeAction(event){
 }
 
 function checkColision(heroHeadPositionX, heroHeadPositionY){
-	ctx.fillStyle = 'red';
-	ctx.fillRect(heroHeadPositionX, heroHeadPositionY, 5, 5);
 	enemies.forEach(function(enemy, index) {
 		if(
 			((enemy.posX >= heroHeadPositionX - 20) && (enemy.posX <= heroHeadPositionX + 20)) &&
@@ -144,7 +260,6 @@ function checkColision(heroHeadPositionX, heroHeadPositionY){
 			enemies.splice(index, 1);
 			score = Math.round(score + 1 * enemy.speed);
 			ctx.clearRect(livebar.positionX - 70, livebar.positionY, 500, 40);
-			drawTextData();
 			createEnemy();
 		}
 	});
@@ -167,8 +282,8 @@ function drawTextData() {
 function createEnemy() {
 	/*
 		TODO:
-		- przeciwnicy nadlatują z lewej lub prawej, na losowej wysokości z różną prędkością - done
-		- grafika dla przeciwników
+		- przeciwnicy nadlatują z lewej lub prawej, na losowej wysokości z różną prędkością - DONE
+		- grafika dla przeciwników - DONE
 		- dwa rodzaje przeciwników: mięsne i warzywne. Mięsne dodają punktów i życia, warzywne odbierają życie.
 	*/
 	var enemy = {
@@ -203,7 +318,7 @@ function createEnemies(enemiesNumber){
 	}
 }
 
-function drawEnemy() {
+function drawEnemies() {
 	enemies.forEach(function(enemy, index){
 		ctx.drawImage(enemiesSprite, enemy.imageStage * 15, 0 , 15, 15, enemy.posX, enemy.posY, 15, 15);
 		enemy.posX += enemy.speedDirect;
@@ -221,6 +336,50 @@ function drawLiveBar(livePercent) {
 }
 
 // Helpers
+function startAnimating(fps) {
+	fpsInterval = 1000 / fps;
+	then = Date.now();
+	startTime = then;
+	animate();
+}
+
+function animate() {
+	window.requestAnimFrame(animate);
+	now = Date.now();
+	elapsed = now - then;
+	
+	if (elapsed > fpsInterval) {
+		then = now - (elapsed % fpsInterval);
+		var sinceStart = now - startTime;
+		var currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
+		results.innerHTML = currentFps + ' fps.';
+		gameLoop();
+	}
+}
+
 function getRandomInt(min, max) {
 	return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+function getMousePos(canvas, event) {
+	var rect = canvas.getBoundingClientRect();
+	return {
+		x: event.clientX - rect.left,
+		y: event.clientY - rect.top
+	};
+}
+
+function isInside(pos, rect){
+	return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y;
+}
+
+window.requestAnimFrame = (function() {
+	return  window.requestAnimationFrame       || 
+			window.webkitRequestAnimationFrame || 
+			window.mozRequestAnimationFrame    || 
+			window.oRequestAnimationFrame      || 
+			window.msRequestAnimationFrame     || 
+			function(/* function */ callback, /* DOMElement */ element){
+				window.setTimeout(callback, 1000 / 60);
+			};
+})();
