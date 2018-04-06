@@ -80,18 +80,8 @@ function drawButtons(){
 		width:240,
 		height:50
 	};
+	generateButton(startButton, 'START GAME', -80, 8, 'big');
 
-	generateButton(drawButtons, 'START GAME', -80, 8, 'big');
-
-	ctx.fillStyle = '#61c46a';
-	ctx.fillRect(startButton.x, startButton.y , startButton.width, startButton.height);
-	ctx.lineWidth = 4;
-	ctx.strokeStyle = '#ffffff';
-	ctx.strokeRect(startButton.x, startButton.y , startButton.width, startButton.height);
-
-	ctx.fillStyle = '#ffffff';
-	ctx.font = '30px monospace';
-	ctx.fillText('START GAME',canvas.width / 2 - 80, canvas.height / 2 + 8);
 
 	var playTutorialButton = {
 		x:canvas.width / 2 - 100,
@@ -99,15 +89,7 @@ function drawButtons(){
 		width:200,
 		height:50
 	};
-	ctx.fillStyle = '#61c46a';
-	ctx.fillRect(playTutorialButton.x, playTutorialButton.y , playTutorialButton.width, playTutorialButton.height);
-	ctx.lineWidth = 2;
-	ctx.strokeStyle = '#ffffff';
-	ctx.strokeRect(playTutorialButton.x, playTutorialButton.y , playTutorialButton.width, playTutorialButton.height);
-
-	ctx.fillStyle = '#ffffff';
-	ctx.font = '20px monospace';
-	ctx.fillText('SHOW TUTORIAL',canvas.width / 2 - 70, canvas.height / 2 + 90);
+	generateButton(playTutorialButton, 'SHOW TUTORIAL', -70, 90, 'small');
 
 	var showHighscoresButton = {
 		x:canvas.width / 2 - 100,
@@ -125,18 +107,19 @@ function drawButtons(){
 	}; 
 	generateButton(aboutButton, 'ABOUT', -30, 210, 'small');
 
-	canvas.addEventListener('click', function(evt) {
-		var mousePos = getMousePos(canvas, evt);
+	canvas.addEventListener('click',  function(event) {
+		var mousePos = getMousePos(canvas, event);
 		if (isInside(mousePos,startButton)) {
 			startGame();
-			canvas.removeEventListener('click', function(evt){}, false); 
+			canvas.removeEventListener('click',  this , false); 
 		}
 		if (isInside(mousePos,showHighscoresButton)) {
 			getHighScores();
-			canvas.removeEventListener('click', function(evt){}, false);
+			canvas.removeEventListener('click',  this , false);
 		}
 	}, false);
 }
+
 
 function generateButton(btnObject, btnText, textOffsetX, textOffsetY, btnStyle){
 	var btn =  btnObject;
@@ -233,7 +216,12 @@ function drawHero(){
 
 	//pot
 	ctx.beginPath();
-	//
+	ctx.moveTo(hero.positionX - 50, hero.positionY + 100);
+	ctx.lineTo(hero.positionX + 111, hero.positionY + 100);
+	ctx.lineTo(hero.positionX + 101, hero.positionY + 110);
+	ctx.lineTo(hero.positionX + 90, canvas.height);
+	ctx.lineTo(hero.positionX - 29, canvas.height);
+	ctx.lineTo(hero.positionX - 39, hero.positionY + 110);
 	ctx.closePath();
 	ctx.fillStyle='#7c2c04';
 	ctx.fill();
