@@ -18,7 +18,7 @@ TODO:
 - split hero image into parts
 */
 
-var score = 0,
+var score = 220,
 	enemiesNumber = 20,
 	level = 1,
 	hero = {
@@ -35,7 +35,7 @@ var score = 0,
 	},
 	livebar = {
 		live: 100,
-		speed: 0.1,
+		speed: 0.04,
 		positionX: 100,
 		positionY: 20,
 		colors: ['#b40101','#99003d','#99008b','#610099','#000099']
@@ -119,7 +119,6 @@ function drawButtons(){
 		}
 		if (isInside(mousePos,showHighscoresButton)) {
 			getHighScores();
-			canvas.removeEventListener('click',  _func , false);
 		}
 	}, false);
 }
@@ -161,7 +160,6 @@ function playTutorial() {
 
 function startGame(){
 	canvas.style.backgroundColor = 'antiquewhite';
-	drawTextData();
 	createEnemies(enemiesNumber);
 	canvas.addEventListener('click', makeAction, false);
 	startAnimating(60);
@@ -241,13 +239,13 @@ function makeAction(event){
 	
 	hero.heroPositionX = hero.moveToX;
 	hero.heroPositionY = hero.moveToY;
-
 	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
 	
 	/*
-		TODO:
-		- remove setTimeout!!
+	TODO:
+	- remove setTimeout!!
 	*/
+	
 	setTimeout(function(){
 		hero.heroPositionX = hero.positionX;
 		hero.heroPositionY = hero.positionY;
@@ -259,18 +257,18 @@ function makeAction(event){
 function checkColision(heroHeadPositionX, heroHeadPositionY){
 	enemies.forEach(function(enemy, index) {
 		if(
-			((enemy.posX >= heroHeadPositionX - 20) && (enemy.posX <= heroHeadPositionX + 20)) &&
+			((enemy.posX >= heroHeadPositionX - 30) && (enemy.posX <= heroHeadPositionX + 20)) &&
 			((enemy.posY >= heroHeadPositionY - 20) && (enemy.posY <= heroHeadPositionY + 20))		
 		) { 
 			enemies.splice(index, 1);
 
 			if(enemy.imageStage <= 4) {
 				score = Math.round(score + 1 * enemy.speed);
-				
-				if(livebar.live + 10 + score >= 100) {
+
+				if(livebar.live + 7 * enemy.speed >= 100) {
 					livebar.live = 100;
 				} else {
-					livebar.live += (10 + score);
+					livebar.live += 7 * enemy.speed;
 				}
 			}
 
@@ -282,6 +280,9 @@ function checkColision(heroHeadPositionX, heroHeadPositionY){
 }
 
 function drawTextData() {
+	ctx.fillStyle = '#000099';
+	ctx.font = '20px monospace';
+	ctx.fillText('Level: '+level,canvas.width-150,livebar.positionY + 15);
 
 	ctx.fillStyle = '#000099';
 	ctx.font = '20px monospace';
@@ -361,6 +362,9 @@ function drawEnemies() {
 
 
 function drawLiveBar(livePercent) {
+	ctx.strokeStyle = '#000099';
+	ctx.strokeRect(livebar.positionX,livebar.positionY,100,20);
+
 	ctx.fillStyle = livebar.colors[Math.round(livebar.live / 25)];
 	ctx.fillRect(livebar.positionX+livePercent,livebar.positionY,1,20);
 }
