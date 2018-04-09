@@ -15,7 +15,7 @@ enemiesSprite.src = 'food_sprite.png';
 
 /*
 TODO:
-- change every Y position to canvas.height - ...
+- split hero image into parts
 */
 
 var score = 0,
@@ -30,12 +30,15 @@ var score = 0,
 		positionY: canvas.height - 150,
 		moveToX: canvas.width / 2 + 3,
 		moveToY: canvas.height - 150, 
-		speed: 10
+		speed: 10,
+		animationDelay: 100
 	},
 	livebar = {
 		live: 100,
+		speed: 0.1,
 		positionX: 100,
-		positionY: canvas.height - 40
+		positionY: 20,
+		colors: ['#b40101','#99003d','#99008b','#610099','#000099']
 	},
 	enemies = [],
 	speedTick = 0;
@@ -44,6 +47,7 @@ var stop = false,
 	frameCount = 0,
 	results = document.querySelector('#fps'),
 	fps, fpsInterval, startTime, now, then, elapsed;
+
 
 function init(){
 	/*
@@ -55,7 +59,6 @@ function init(){
 
 	drawLogo();
 	drawButtons();
-	createEnemies(enemiesNumber);
 }
 
 function drawLogo() {
@@ -107,15 +110,16 @@ function drawButtons(){
 	}; 
 	generateButton(aboutButton, 'ABOUT', -30, 210, 'small');
 
-	canvas.addEventListener('click',  function(event) {
+
+	canvas.addEventListener('click', function _func() {
 		var mousePos = getMousePos(canvas, event);
 		if (isInside(mousePos,startButton)) {
 			startGame();
-			canvas.removeEventListener('click',  this , false); 
+			canvas.removeEventListener('click',  _func , false); 
 		}
 		if (isInside(mousePos,showHighscoresButton)) {
 			getHighScores();
-			canvas.removeEventListener('click',  this , false);
+			canvas.removeEventListener('click',  _func , false);
 		}
 	}, false);
 }
@@ -144,8 +148,9 @@ function getHighScores(){
 	/* 
 		TODO
 	*/
-	var highscores = localStorage.getItem('scores') || [];
-	console.log(highscores);
+	var highscores = [];
+	if(localStorage.getItem('scores')) highscores = new Array(localStorage.getItem('scores'));
+	return highscores;
 }
 
 function playTutorial() {
@@ -157,7 +162,7 @@ function playTutorial() {
 function startGame(){
 	canvas.style.backgroundColor = 'antiquewhite';
 	drawTextData();
-	// createEnemies(enemiesNumber); - remove button listener first!!
+	createEnemies(enemiesNumber);
 	canvas.addEventListener('click', makeAction, false);
 	startAnimating(60);
 }
@@ -255,27 +260,52 @@ function checkColision(heroHeadPositionX, heroHeadPositionY){
 	enemies.forEach(function(enemy, index) {
 		if(
 			((enemy.posX >= heroHeadPositionX - 20) && (enemy.posX <= heroHeadPositionX + 20)) &&
-			((enemy.posY >= heroHeadPositionY - 20) && (enemy.posY <= heroHeadPositionY + 20)) 
+			((enemy.posY >= heroHeadPositionY - 20) && (enemy.posY <= heroHeadPositionY + 20))		
 		) { 
 			enemies.splice(index, 1);
-			score = Math.round(score + 1 * enemy.speed);
+
+			if(enemy.imageStage <= 4) {
+				score = Math.round(score + 1 * enemy.speed);
+				
+				if(livebar.live + 10 + score >= 100) {
+					livebar.live = 100;
+				} else {
+					livebar.live += (10 + score);
+				}
+			}
+
 			ctx.clearRect(livebar.positionX - 70, livebar.positionY, 500, 40);
 			createEnemy();
 		}
 	});
+	level = Math.round(score / 100) + 1;
 }
 
 function drawTextData() {
+
 	ctx.fillStyle = '#000099';
 	ctx.font = '20px monospace';
 	ctx.fillText('Score: '+score,livebar.positionX + 130,livebar.positionY + 15);
-
+	
 	ctx.font = '20px monospace';
 	ctx.fillText('Live:',livebar.positionX - 70,livebar.positionY + 15);
-	if( livebar.live > 0 ){
+	if( livebar.live >= 0 ){
+		livebar.live -= (livebar.speed * level);
 		for(var j = 1; j <= livebar.live; j++) {
 			drawLiveBar(j);
 		}
+	} else {
+		//You loose!
+		var scores = [];
+		scores = getHighScores();
+		scores.push(score.toString());
+		localStorage.setItem('scores',scores);
+
+		window.requestAnimFrame = null;
+		// window.cancelAnimationFrame(animate);
+		ctx.fillStyle = '#AA0505';
+		ctx.font = '60px monospace';
+		ctx.fillText('GAME OVER',canvas.height/2, canvas.width/2 - 300);
 	}
 }
 
@@ -306,7 +336,7 @@ function createEnemy() {
 	} else {
 		enemy.posX = getRandomInt(-100,0);
 	}
-	enemy.posY = getRandomInt(20, canvas.height - 200);
+	enemy.posY = getRandomInt(100, canvas.height - 200);
 	enemy.imageStage = getRandomInt(0,8);
 
 	enemies.push(enemy);
@@ -331,7 +361,7 @@ function drawEnemies() {
 
 
 function drawLiveBar(livePercent) {
-	ctx.fillStyle = '#000099';
+	ctx.fillStyle = livebar.colors[Math.round(livebar.live / 25)];
 	ctx.fillRect(livebar.positionX+livePercent,livebar.positionY,1,20);
 }
 
