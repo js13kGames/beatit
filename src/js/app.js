@@ -31,7 +31,7 @@ var score = 220,
 		moveToX: canvas.width / 2 + 3,
 		moveToY: canvas.height - 150, 
 		speed: 10,
-		animationDelay: 100
+		animationDelay: 100,
 	},
 	livebar = {
 		live: 100,
@@ -43,7 +43,8 @@ var score = 220,
 	enemies = [],
 	speedTick = 0;
 
-var stop = false, 
+var mainAnimationFrame,
+	stop = false, 
 	frameCount = 0,
 	results = document.querySelector('#fps'),
 	fps, fpsInterval, startTime, now, then, elapsed;
@@ -52,7 +53,7 @@ var stop = false,
 function init(){
 	/*
 	TODO:
-	- licznik punktów (+ zapis w localstorage)
+	- licznik punktów (+ zapis w localstorage) - DONE
 	- ekran startowy gry (+ komiks przedstawiający fabułę)
 	*/
 	canvas.style.backgroundColor = '#61c46a';
@@ -239,19 +240,22 @@ function makeAction(event){
 	
 	hero.heroPositionX = hero.moveToX;
 	hero.heroPositionY = hero.moveToY;
-	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
 	
-	/*
-	TODO:
-	- remove setTimeout!!
-	*/
-	
-	setTimeout(function(){
-		hero.heroPositionX = hero.positionX;
-		hero.heroPositionY = hero.positionY;
-		hero.moveToX = hero.positionX;
-		hero.moveToY = hero.positionY;
-	},500);
+	goBack();
+	var makeActionframe;
+	function goBack() {
+		makeActionframe = requestAnimationFrame(goBack);
+		checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
+		if(hero.animationDelay === 0 ){
+			hero.heroPositionX = hero.positionX;
+			hero.heroPositionY = hero.positionY;
+			hero.moveToX = hero.positionX;
+			hero.moveToY = hero.positionY;
+			cancelAnimationFrame(makeActionframe);
+			hero.animationDelay = 100;
+		} 
+		hero.animationDelay -= 1;
+	}
 }
 
 function checkColision(heroHeadPositionX, heroHeadPositionY){
@@ -302,8 +306,7 @@ function drawTextData() {
 		scores.push(score.toString());
 		localStorage.setItem('scores',scores);
 
-		window.requestAnimFrame = null;
-		// window.cancelAnimationFrame(animate);
+		cancelAnimationFrame(mainAnimationFrame);
 		ctx.fillStyle = '#AA0505';
 		ctx.font = '60px monospace';
 		ctx.fillText('GAME OVER',canvas.height/2, canvas.width/2 - 300);
@@ -378,7 +381,7 @@ function startAnimating(fps) {
 }
 
 function animate() {
-	window.requestAnimFrame(animate);
+	mainAnimationFrame = window.requestAnimationFrame(animate);
 	now = Date.now();
 	elapsed = now - then;
 	
@@ -406,14 +409,3 @@ function getMousePos(canvas, event) {
 function isInside(pos, rect){
 	return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y;
 }
-
-window.requestAnimFrame = (function() {
-	return  window.requestAnimationFrame       || 
-			window.webkitRequestAnimationFrame || 
-			window.mozRequestAnimationFrame    || 
-			window.oRequestAnimationFrame      || 
-			window.msRequestAnimationFrame     || 
-			function(/* function */ callback, /* DOMElement */ element){
-				window.setTimeout(callback, 1000 / 60);
-			};
-})();
