@@ -31,7 +31,7 @@ var score = 220,
 		moveToX: canvas.width / 2 + 3,
 		moveToY: canvas.height - 150, 
 		speed: 10,
-		animationDelay: 100,
+		animationDelay: 50,
 	},
 	livebar = {
 		live: 100,
@@ -200,23 +200,7 @@ function drawHero(){
 		speedTick = 1;
 	}
 
-	//beam
-	ctx.beginPath();
-	ctx.lineWidth = 1;
-	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
-	if(hero.moveToY < hero.positionY){
-		ctx.bezierCurveTo(hero.positionX + 16, hero.positionY , hero.moveToX + 16, hero.moveToY + 200, hero.moveToX + 16, hero.moveToY + 100);
-	} 
-	ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
-	if(hero.moveToY < hero.positionY){
-		ctx.bezierCurveTo(hero.moveToX + 31, hero.moveToY + 200, hero.positionX + 31, hero.positionY, hero.positionX + 31, hero.positionY + 100);
-	}
-	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
-	ctx.strokeStyle = '#020601';
-	ctx.stroke();
-	ctx.closePath();
-	ctx.fillStyle='#285a10';
-	ctx.fill();
+	drawHeroBeam();
 
 	//pot
 	ctx.beginPath();
@@ -229,32 +213,84 @@ function drawHero(){
 	ctx.closePath();
 	ctx.fillStyle='#7c2c04';
 	ctx.fill();
+}
 
+function drawHeroBeam() {
+	//beam
+	ctx.beginPath();
+	ctx.lineWidth = 1;
+	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
+	if(hero.moveToY < hero.positionY){
+		ctx.bezierCurveTo(hero.positionX + 16, hero.positionY , hero.heroPositionX + 16, hero.heroPositionY + 200, hero.heroPositionX + 16, hero.heroPositionY + 100);
+	} 
+	ctx.lineTo(hero.heroPositionX + 31, hero.heroPositionY + 100);
+	if(hero.moveToY < hero.positionY){
+		ctx.bezierCurveTo(hero.heroPositionX + 31, hero.heroPositionY + 200, hero.positionX + 31, hero.positionY, hero.positionX + 31, hero.positionY + 100);
+	}
+	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
+	ctx.strokeStyle = '#020601';
+	ctx.stroke();
+	ctx.closePath();
+	ctx.fillStyle='#285a10';
+	ctx.fill();
+	
 }
 
 function makeAction(event){
+	// remove action listener from make action
 	var mousePos = getMousePos(canvas, event);
 	//correct the cords (45 px), so clicked cords was the middle of head
 	hero.moveToX = mousePos.x - 45;
 	hero.moveToY = mousePos.y - 45;
 	
-	hero.heroPositionX = hero.moveToX;
-	hero.heroPositionY = hero.moveToY;
-	
-	goBack();
+	var heroSpeed = 20;
+	var goingThereSpeedMultipler = 1;
+	var goingBackSpeedMultipler = 1;
+	var framesToStayThere = 20;
 	var makeActionframe;
-	function goBack() {
+	var actionJumpX = (hero.moveToX - hero.heroPositionX) / heroSpeed;
+	var actionJumpY = (hero.moveToY - hero.heroPositionY) / heroSpeed;
+	var state = 'goingThere';
+	goBack();
+	function goBack() { 
 		makeActionframe = requestAnimationFrame(goBack);
-		checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
-		if(hero.animationDelay === 0 ){
+		hero.heroSliceX = 124;
+		drawHeroBeam();
+		if (state == 'goingThere') {
+			if (hero.heroPositionX == hero.moveToX) {
+				state = 'beenThere';
+			} else if (Math.abs(hero.heroPositionX - hero.moveToX) > Math.abs(actionJumpX * goingThereSpeedMultipler)) {
+				hero.heroPositionX += (actionJumpX * goingThereSpeedMultipler);
+				hero.heroPositionY += (actionJumpY * goingThereSpeedMultipler);
+			} else {
+				hero.heroPositionX = hero.moveToX;
+				hero.heroPositionY = hero.moveToY;
+			}
+		} else if (state == 'beenThere') {
+			if (framesToStayThere >= 0) {
+				checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
+				framesToStayThere--;
+			} else {
+				state = 'goingBack';
+			}
+		} else if (state == 'goingBack') {
+			if (hero.heroPositionX == hero.positionX) {
+				state = 'back';
+			} else if (Math.abs(hero.heroPositionX - hero.positionX) > Math.abs(actionJumpX * goingThereSpeedMultipler)) {
+				hero.heroPositionX -= (actionJumpX * goingBackSpeedMultipler);
+				hero.heroPositionY -= (actionJumpY * goingBackSpeedMultipler);
+			} else {
+				hero.heroPositionX = hero.positionX;
+				hero.heroPositionY = hero.positiony;
+			}
+		} else {
 			hero.heroPositionX = hero.positionX;
 			hero.heroPositionY = hero.positionY;
 			hero.moveToX = hero.positionX;
 			hero.moveToY = hero.positionY;
 			cancelAnimationFrame(makeActionframe);
-			hero.animationDelay = 100;
+			hero.animationDelay = 50;
 		} 
-		hero.animationDelay -= 1;
 	}
 }
 
@@ -409,3 +445,4 @@ function getMousePos(canvas, event) {
 function isInside(pos, rect){
 	return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y;
 }
+
