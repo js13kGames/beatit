@@ -32,10 +32,12 @@ var score = 220,
 		moveToY: canvas.height - 150, 
 		speed: 10,
 		animationDelay: 50,
+		animationState: 'goingThere',
+		actionListener: null
 	},
 	livebar = {
 		live: 100,
-		speed: 0.04,
+		speed: 0.03,
 		positionX: 100,
 		positionY: 20,
 		colors: ['#b40101','#99003d','#99008b','#610099','#000099']
@@ -119,7 +121,8 @@ function drawButtons(){
 			canvas.removeEventListener('click',  _func , false); 
 		}
 		if (isInside(mousePos,showHighscoresButton)) {
-			getHighScores();
+			drawHighscores(getHighScores());
+			canvas.removeEventListener('click',  _func , false); 
 		}
 	}, false);
 }
@@ -151,6 +154,20 @@ function getHighScores(){
 	var highscores = [];
 	if(localStorage.getItem('scores')) highscores = new Array(localStorage.getItem('scores'));
 	return highscores;
+}
+
+function drawHighscores() {
+	ctx.fillStyle = '#61c46a';
+	ctx.strokeStyle = '#000000';
+	ctx.fillRect(50, 50 , canvas.width - 100, canvas.height - 100);
+	ctx.strokeRect(50, 50 , canvas.width - 100, canvas.height - 100);
+	//close button
+	ctx.moveTo(canvas.width - 75, 75);
+	ctx.lineTo(canvas.width - 90, 90);
+	ctx.moveTo(canvas.width - 90, 75);
+	ctx.lineTo(canvas.width - 75, 90);
+	ctx.strokeStyle = '#000000';
+	ctx.stroke();
 }
 
 function playTutorial() {
@@ -243,22 +260,23 @@ function makeAction(event){
 	hero.moveToX = mousePos.x - 45;
 	hero.moveToY = mousePos.y - 45;
 	
-	var heroSpeed = 20;
 	var goingThereSpeedMultipler = 1;
 	var goingBackSpeedMultipler = 1;
 	var framesToStayThere = 20;
 	var makeActionframe;
-	var actionJumpX = (hero.moveToX - hero.heroPositionX) / heroSpeed;
-	var actionJumpY = (hero.moveToY - hero.heroPositionY) / heroSpeed;
-	var state = 'goingThere';
+	var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
+	var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
+	hero.animationState = 'goingThere';
+
 	goBack();
 	function goBack() { 
+		canvas.removeEventListener('click',  makeAction, false);
 		makeActionframe = requestAnimationFrame(goBack);
 		hero.heroSliceX = 124;
 		drawHeroBeam();
-		if (state == 'goingThere') {
+		if (hero.animationState == 'goingThere') {
 			if (hero.heroPositionX == hero.moveToX) {
-				state = 'beenThere';
+				hero.animationState = 'beenThere';
 			} else if (Math.abs(hero.heroPositionX - hero.moveToX) > Math.abs(actionJumpX * goingThereSpeedMultipler)) {
 				hero.heroPositionX += (actionJumpX * goingThereSpeedMultipler);
 				hero.heroPositionY += (actionJumpY * goingThereSpeedMultipler);
@@ -266,16 +284,16 @@ function makeAction(event){
 				hero.heroPositionX = hero.moveToX;
 				hero.heroPositionY = hero.moveToY;
 			}
-		} else if (state == 'beenThere') {
+		} else if (hero.animationState == 'beenThere') {
 			if (framesToStayThere >= 0) {
-				checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
+				checkColision(hero.heroPositionX, hero.heroPositionY);
 				framesToStayThere--;
 			} else {
-				state = 'goingBack';
+				hero.animationState = 'goingBack';
 			}
-		} else if (state == 'goingBack') {
+		} else if (hero.animationState == 'goingBack') {
 			if (hero.heroPositionX == hero.positionX) {
-				state = 'back';
+				hero.animationState = 'back';
 			} else if (Math.abs(hero.heroPositionX - hero.positionX) > Math.abs(actionJumpX * goingThereSpeedMultipler)) {
 				hero.heroPositionX -= (actionJumpX * goingBackSpeedMultipler);
 				hero.heroPositionY -= (actionJumpY * goingBackSpeedMultipler);
@@ -289,6 +307,7 @@ function makeAction(event){
 			hero.moveToX = hero.positionX;
 			hero.moveToY = hero.positionY;
 			cancelAnimationFrame(makeActionframe);
+			canvas.addEventListener('click', makeAction, false);
 			hero.animationDelay = 50;
 		} 
 	}
@@ -297,8 +316,8 @@ function makeAction(event){
 function checkColision(heroHeadPositionX, heroHeadPositionY){
 	enemies.forEach(function(enemy, index) {
 		if(
-			((enemy.posX >= heroHeadPositionX - 30) && (enemy.posX <= heroHeadPositionX + 20)) &&
-			((enemy.posY >= heroHeadPositionY - 20) && (enemy.posY <= heroHeadPositionY + 20))		
+			((enemy.posX >= heroHeadPositionX - 30) && (enemy.posX <= heroHeadPositionX + 50)) &&
+			((enemy.posY >= heroHeadPositionY - 30) && (enemy.posY <= heroHeadPositionY + 50))		
 		) { 
 			enemies.splice(index, 1);
 
@@ -343,6 +362,7 @@ function drawTextData() {
 		localStorage.setItem('scores',scores);
 
 		cancelAnimationFrame(mainAnimationFrame);
+		canvas.removeEventListener('click',  makeAction, false); 
 		ctx.fillStyle = '#AA0505';
 		ctx.font = '60px monospace';
 		ctx.fillText('GAME OVER',canvas.height/2, canvas.width/2 - 300);
@@ -445,4 +465,3 @@ function getMousePos(canvas, event) {
 function isInside(pos, rect){
 	return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y;
 }
-
