@@ -31,11 +31,13 @@ var score = 220,
 		moveToX: canvas.width / 2 + 3,
 		moveToY: canvas.height - 150, 
 		speed: 10,
-		animationDelay: 100
+		animationDelay: 50,
+		animationState: 'goingThere',
+		actionListener: null
 	},
 	livebar = {
 		live: 100,
-		speed: 0.04,
+		speed: 0.03,
 		positionX: 100,
 		positionY: 20,
 		colors: ['#b40101','#99003d','#99008b','#610099','#000099']
@@ -43,7 +45,8 @@ var score = 220,
 	enemies = [],
 	speedTick = 0;
 
-var stop = false, 
+var mainAnimationFrame,
+	stop = false, 
 	frameCount = 0,
 	results = document.querySelector('#fps'),
 	fps, fpsInterval, startTime, now, then, elapsed;
@@ -52,7 +55,7 @@ var stop = false,
 function init(){
 	/*
 	TODO:
-	- licznik punktów (+ zapis w localstorage)
+	- licznik punktów (+ zapis w localstorage) - DONE
 	- ekran startowy gry (+ komiks przedstawiający fabułę)
 	*/
 	canvas.style.backgroundColor = '#61c46a';
@@ -118,7 +121,8 @@ function drawButtons(){
 			canvas.removeEventListener('click',  _func , false); 
 		}
 		if (isInside(mousePos,showHighscoresButton)) {
-			getHighScores();
+			drawHighscores(getHighScores());
+			canvas.removeEventListener('click',  _func , false); 
 		}
 	}, false);
 }
@@ -150,6 +154,20 @@ function getHighScores(){
 	var highscores = [];
 	if(localStorage.getItem('scores')) highscores = new Array(localStorage.getItem('scores'));
 	return highscores;
+}
+
+function drawHighscores() {
+	ctx.fillStyle = '#61c46a';
+	ctx.strokeStyle = '#000000';
+	ctx.fillRect(50, 50 , canvas.width - 100, canvas.height - 100);
+	ctx.strokeRect(50, 50 , canvas.width - 100, canvas.height - 100);
+	//close button
+	ctx.moveTo(canvas.width - 75, 75);
+	ctx.lineTo(canvas.width - 90, 90);
+	ctx.moveTo(canvas.width - 90, 75);
+	ctx.lineTo(canvas.width - 75, 90);
+	ctx.strokeStyle = '#000000';
+	ctx.stroke();
 }
 
 function playTutorial() {
@@ -199,23 +217,7 @@ function drawHero(){
 		speedTick = 1;
 	}
 
-	//beam
-	ctx.beginPath();
-	ctx.lineWidth = 1;
-	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
-	if(hero.moveToY < hero.positionY){
-		ctx.bezierCurveTo(hero.positionX + 16, hero.positionY , hero.moveToX + 16, hero.moveToY + 200, hero.moveToX + 16, hero.moveToY + 100);
-	} 
-	ctx.lineTo(hero.moveToX + 31, hero.moveToY + 100);
-	if(hero.moveToY < hero.positionY){
-		ctx.bezierCurveTo(hero.moveToX + 31, hero.moveToY + 200, hero.positionX + 31, hero.positionY, hero.positionX + 31, hero.positionY + 100);
-	}
-	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
-	ctx.strokeStyle = '#020601';
-	ctx.stroke();
-	ctx.closePath();
-	ctx.fillStyle='#285a10';
-	ctx.fill();
+	drawHeroBeam();
 
 	//pot
 	ctx.beginPath();
@@ -228,37 +230,94 @@ function drawHero(){
 	ctx.closePath();
 	ctx.fillStyle='#7c2c04';
 	ctx.fill();
+}
 
+function drawHeroBeam() {
+	//beam
+	ctx.beginPath();
+	ctx.lineWidth = 1;
+	ctx.moveTo(hero.positionX + 16, hero.positionY + 100);
+	if(hero.moveToY < hero.positionY){
+		ctx.bezierCurveTo(hero.positionX + 16, hero.positionY , hero.heroPositionX + 16, hero.heroPositionY + 200, hero.heroPositionX + 16, hero.heroPositionY + 100);
+	} 
+	ctx.lineTo(hero.heroPositionX + 31, hero.heroPositionY + 100);
+	if(hero.moveToY < hero.positionY){
+		ctx.bezierCurveTo(hero.heroPositionX + 31, hero.heroPositionY + 200, hero.positionX + 31, hero.positionY, hero.positionX + 31, hero.positionY + 100);
+	}
+	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
+	ctx.strokeStyle = '#020601';
+	ctx.stroke();
+	ctx.closePath();
+	ctx.fillStyle='#285a10';
+	ctx.fill();
+	
 }
 
 function makeAction(event){
+	// remove action listener from make action
 	var mousePos = getMousePos(canvas, event);
 	//correct the cords (45 px), so clicked cords was the middle of head
 	hero.moveToX = mousePos.x - 45;
 	hero.moveToY = mousePos.y - 45;
 	
-	hero.heroPositionX = hero.moveToX;
-	hero.heroPositionY = hero.moveToY;
-	checkColision(hero.heroPositionX + 30, hero.heroPositionY + 30);
-	
-	/*
-	TODO:
-	- remove setTimeout!!
-	*/
-	
-	setTimeout(function(){
-		hero.heroPositionX = hero.positionX;
-		hero.heroPositionY = hero.positionY;
-		hero.moveToX = hero.positionX;
-		hero.moveToY = hero.positionY;
-	},500);
+	var goingThereSpeedMultipler = 1;
+	var goingBackSpeedMultipler = 1;
+	var framesToStayThere = 20;
+	var makeActionframe;
+	var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
+	var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
+	hero.animationState = 'goingThere';
+
+	goBack();
+	function goBack() { 
+		canvas.removeEventListener('click',  makeAction, false);
+		makeActionframe = requestAnimationFrame(goBack);
+		hero.heroSliceX = 124;
+		drawHeroBeam();
+		if (hero.animationState == 'goingThere') {
+			if (hero.heroPositionX == hero.moveToX) {
+				hero.animationState = 'beenThere';
+			} else if (Math.abs(hero.heroPositionX - hero.moveToX) > Math.abs(actionJumpX * goingThereSpeedMultipler)) {
+				hero.heroPositionX += (actionJumpX * goingThereSpeedMultipler);
+				hero.heroPositionY += (actionJumpY * goingThereSpeedMultipler);
+			} else {
+				hero.heroPositionX = hero.moveToX;
+				hero.heroPositionY = hero.moveToY;
+			}
+		} else if (hero.animationState == 'beenThere') {
+			if (framesToStayThere >= 0) {
+				checkColision(hero.heroPositionX, hero.heroPositionY);
+				framesToStayThere--;
+			} else {
+				hero.animationState = 'goingBack';
+			}
+		} else if (hero.animationState == 'goingBack') {
+			if (hero.heroPositionX == hero.positionX) {
+				hero.animationState = 'back';
+			} else if (Math.abs(hero.heroPositionX - hero.positionX) > Math.abs(actionJumpX * goingThereSpeedMultipler)) {
+				hero.heroPositionX -= (actionJumpX * goingBackSpeedMultipler);
+				hero.heroPositionY -= (actionJumpY * goingBackSpeedMultipler);
+			} else {
+				hero.heroPositionX = hero.positionX;
+				hero.heroPositionY = hero.positiony;
+			}
+		} else {
+			hero.heroPositionX = hero.positionX;
+			hero.heroPositionY = hero.positionY;
+			hero.moveToX = hero.positionX;
+			hero.moveToY = hero.positionY;
+			cancelAnimationFrame(makeActionframe);
+			canvas.addEventListener('click', makeAction, false);
+			hero.animationDelay = 50;
+		} 
+	}
 }
 
 function checkColision(heroHeadPositionX, heroHeadPositionY){
 	enemies.forEach(function(enemy, index) {
 		if(
-			((enemy.posX >= heroHeadPositionX - 30) && (enemy.posX <= heroHeadPositionX + 20)) &&
-			((enemy.posY >= heroHeadPositionY - 20) && (enemy.posY <= heroHeadPositionY + 20))		
+			((enemy.posX >= heroHeadPositionX - 30) && (enemy.posX <= heroHeadPositionX + 50)) &&
+			((enemy.posY >= heroHeadPositionY - 30) && (enemy.posY <= heroHeadPositionY + 50))		
 		) { 
 			enemies.splice(index, 1);
 
@@ -302,8 +361,8 @@ function drawTextData() {
 		scores.push(score.toString());
 		localStorage.setItem('scores',scores);
 
-		window.requestAnimFrame = null;
-		// window.cancelAnimationFrame(animate);
+		cancelAnimationFrame(mainAnimationFrame);
+		canvas.removeEventListener('click',  makeAction, false); 
 		ctx.fillStyle = '#AA0505';
 		ctx.font = '60px monospace';
 		ctx.fillText('GAME OVER',canvas.height/2, canvas.width/2 - 300);
@@ -378,7 +437,7 @@ function startAnimating(fps) {
 }
 
 function animate() {
-	window.requestAnimFrame(animate);
+	mainAnimationFrame = window.requestAnimationFrame(animate);
 	now = Date.now();
 	elapsed = now - then;
 	
@@ -406,14 +465,3 @@ function getMousePos(canvas, event) {
 function isInside(pos, rect){
 	return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y;
 }
-
-window.requestAnimFrame = (function() {
-	return  window.requestAnimationFrame       || 
-			window.webkitRequestAnimationFrame || 
-			window.mozRequestAnimationFrame    || 
-			window.oRequestAnimationFrame      || 
-			window.msRequestAnimationFrame     || 
-			function(/* function */ callback, /* DOMElement */ element){
-				window.setTimeout(callback, 1000 / 60);
-			};
-})();
