@@ -1,0 +1,11 @@
+{
+    "terminal.integrated.shell.windows": "C:\\Program Files\\Git\\bin\\bash.exe",
+    "git.autofetch": true,
+    "window.zoomLevel": 0,
+    "files.eol": "\n",
+    "editor.rulers": [
+        120
+    ],
+    "editor.formatOnSave": true,
+    "prettier.useTabs": true
+}
