@@ -338,17 +338,16 @@ function makeAction(event) {
 function checkColision(heroHeadPositionX, heroHeadPositionY) {
 	enemies.forEach(function(enemy, index) {
 		if (
-			enemy.posX >= heroHeadPositionX - 30 &&
+			enemy.posX >= heroHeadPositionX - 10 &&
 			enemy.posX <= heroHeadPositionX + 50 &&
-			(enemy.posY >= heroHeadPositionY - 30 && enemy.posY <= heroHeadPositionY + 50)
+			(enemy.posY >= heroHeadPositionY && enemy.posY <= heroHeadPositionY + 50)
 		) {
 			enemies.splice(index, 1);
-			if (enemy.imageStage === 9) {
-				console.log('bonus hit!');
+			if (enemy.imageStage === 14) {
 				createEnemies(200, false);
 				score += 100;
 			}
-			if (enemy.imageStage <= 4 || enemy.imageStage === 9) {
+			if (enemy.imageStage <= 9 || enemy.imageStage === 14) {
 				//if no vegetable
 				score = Math.round(score + 1 * enemy.speed);
 
@@ -429,14 +428,14 @@ function createEnemy(bonusType) {
 
 	//create bonus enemy
 	if (enemy.bonusType === true) {
-		enemy.imageStage = 9;
+		enemy.imageStage = 14;
 		// ctx.save();
 		// ctx.arc(enemy.posX, enemy.posY, 15, 0, 2 * Math.PI);
 		// ctx.strokeStyle = '#000099';
 		// ctx.stroke();
 		// ctx.restore();
 	} else {
-		enemy.imageStage = getRandomInt(0, 8);
+		enemy.imageStage = getRandomInt(0, 13);
 	}
 
 	enemies.push(enemy);
@@ -453,7 +452,7 @@ function drawEnemies() {
 		enemy.posX += enemy.speedDirect;
 		if (enemy.posX > canvas.width + 15 || enemy.posX < -15) {
 			enemies.splice(index, 1);
-			if (enemy.imageStage !== 9 && enemy.bonusType === false && enemies.length <= 20) {
+			if (enemy.imageStage !== 14 && enemy.bonusType === false && enemies.length <= 20) {
 				if (getRandomInt(1, 100) === 1) {
 					createEnemy(true);
 				} else {
