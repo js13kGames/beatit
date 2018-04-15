@@ -18,7 +18,7 @@ TODO:
 - split hero image into parts
 */
 
-var score = 220,
+var score = 0,
 	enemiesNumber = 20,
 	level = 1,
 	hero = {
@@ -43,7 +43,8 @@ var score = 220,
 		colors: ['#b40101', '#99003d', '#99008b', '#610099', '#000099'],
 	},
 	enemies = [],
-	speedTick = 0;
+	speedTick = 0,
+	pointsText = { mark: '+', points: 0, posX: 0, posY: 0 };
 
 var mainAnimationFrame,
 	stop = false,
@@ -62,6 +63,7 @@ function init() {
 	- licznik punktów (+ zapis w localstorage) - DONE
 	- ekran startowy gry (+ komiks przedstawiający fabułę)
 	*/
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	canvas.style.backgroundColor = '#61c46a';
 
 	drawLogo();
@@ -92,13 +94,13 @@ function drawButtons() {
 	};
 	generateButton(startButton, 'START GAME', -80, 8, 'big');
 
-	var playTutorialButton = {
+	var playInstructionsButton = {
 		x: canvas.width / 2 - 100,
 		y: canvas.height / 2 + 60,
 		width: 200,
 		height: 50,
 	};
-	generateButton(playTutorialButton, 'SHOW TUTORIAL', -70, 90, 'small');
+	generateButton(playInstructionsButton, 'SHOW INSTRUCTIONS', -92, 90, 'small');
 
 	var showHighscoresButton = {
 		x: canvas.width / 2 - 100,
@@ -121,12 +123,12 @@ function drawButtons() {
 		function _func() {
 			var mousePos = getMousePos(canvas, event);
 			if (isInside(mousePos, startButton)) {
-				startGame();
 				canvas.removeEventListener('click', _func, false);
+				startGame();
 			}
 			if (isInside(mousePos, showHighscoresButton)) {
-				drawHighscores(getHighScores());
 				canvas.removeEventListener('click', _func, false);
+				drawHighscores(getHighScores());
 			}
 		},
 		false
@@ -153,29 +155,54 @@ function generateButton(btnObject, btnText, textOffsetX, textOffsetY, btnStyle) 
 }
 
 function getHighScores() {
-	/* 
-		TODO
-	*/
 	var highscores = [];
-	if (localStorage.getItem('scores')) highscores = new Array(localStorage.getItem('scores'));
+	if (localStorage.getItem('scores')) highscores = localStorage.getItem('scores');
 	return highscores;
 }
 
-function drawHighscores() {
+function drawHighscores(scores) {
 	ctx.fillStyle = '#61c46a';
 	ctx.strokeStyle = '#000000';
 	ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
 	ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
 	//close button
+	var closeButton = {
+		x: canvas.width - 80,
+		y: 75,
+		width: 50,
+		height: 50,
+	};
 	ctx.moveTo(canvas.width - 75, 75);
 	ctx.lineTo(canvas.width - 90, 90);
 	ctx.moveTo(canvas.width - 90, 75);
 	ctx.lineTo(canvas.width - 75, 90);
 	ctx.strokeStyle = '#000000';
 	ctx.stroke();
+	canvas.addEventListener('click', function _func() {
+		var mousePos = getMousePos(canvas, event);
+		if (isInside(mousePos, closeButton)) {
+			canvas.removeEventListener('click', _func, false);
+			init();
+		}
+	});
+
+	ctx.fillStyle = '#ffffff';
+	ctx.font = '30px monospace';
+	ctx.fillText('Highscores:', canvas.width / 2 - 80, 100);
+	var sorterScores = scores.split(',');
+	sorterScores.sort(function(a, b) {
+		return b - a;
+	});
+	sorterScores.forEach(function(score, index) {
+		if (index < 15) {
+			ctx.fillText(index + 1 + '. ' + score, 100, 150 + 30 * index);
+		} else if (index < 30) {
+			ctx.fillText(index + 1 + '. ' + score, 400, 150 + 30 * (index - 15));
+		}
+	});
 }
 
-function playTutorial() {
+function playInstructions() {
 	/* 
 		TODO
 	*/
@@ -198,13 +225,8 @@ function gameLoop() {
 function drawHero() {
 	/*
 		TODO:
-		- akcje bohatera:
-		-- kliknięcie w obszar na mapie powoduje przemieszczenie się głowy bohatera w kliknięte miejsce. Jeśli głowa postaci i wróg znajdą się w tym samym czasie w miejscu kliknięcia, wtedy dostaje się punkty. - DONE
-		- poziom bohatera. Poziom zwiększa się na podstawie punktów. Im większy poziom tym większy:
 		-- zasięg postaci - jak daleko może chwycić wrogów (zaznaczyć na mapie okręgiem)
 		-- szybkość postaci - jak szybko głowa postaci dosięgnie
-		- możliwość śmierci bohatera - roślina usycha. Roślina potrzebuję jedzenia żeby nie uschnąć. W miarę zwiększenia poziomu roślina potrzebuje więcej jedzenia i szybciej usycha.
-		- poziom życia bohatera (poziom wyschnięcia rośliny) - jako symboliczna "doniczka" w której zmniejsza się np. poziom wody.
 	*/
 	speedTick += 1;
 
@@ -305,9 +327,20 @@ function makeAction(event) {
 			}
 		} else if (hero.animationState == 'beenThere') {
 			if (framesToStayThere >= 0) {
-				checkColision(hero.heroPositionX, hero.heroPositionY);
+				pointsText = checkColision(hero.heroPositionX, hero.heroPositionY);
+				if (pointsText.points !== 0) {
+					ctx.font = '16px monospace';
+					if (pointsText.mark === '-') {
+						ctx.fillStyle = '#990000';
+						ctx.fillText('Live ' + pointsText.mark + pointsText.points, pointsText.posX, pointsText.posY);
+					} else {
+						ctx.fillStyle = '#009900';
+						ctx.fillText(pointsText.mark + pointsText.points, pointsText.posX, pointsText.posY);
+					}
+				}
 				framesToStayThere--;
 			} else {
+				pointsText = { mark: '+', points: 0, posX: 0, posY: 0 };
 				hero.animationState = 'goingBack';
 			}
 		} else if (hero.animationState == 'goingBack') {
@@ -336,12 +369,15 @@ function makeAction(event) {
 }
 
 function checkColision(heroHeadPositionX, heroHeadPositionY) {
+	var scoreBefore = score;
 	enemies.forEach(function(enemy, index) {
 		if (
 			enemy.posX >= heroHeadPositionX - 10 &&
 			enemy.posX <= heroHeadPositionX + 50 &&
 			(enemy.posY >= heroHeadPositionY && enemy.posY <= heroHeadPositionY + 50)
 		) {
+			var scoreTextX = enemy.posX;
+			var scoreTextY = enemy.posY - 50;
 			enemies.splice(index, 1);
 			if (enemy.imageStage === 14) {
 				createEnemies(200, false);
@@ -349,20 +385,26 @@ function checkColision(heroHeadPositionX, heroHeadPositionY) {
 			}
 			if (enemy.imageStage <= 9 || enemy.imageStage === 14) {
 				//if no vegetable
-				score = Math.round(score + 1 * enemy.speed);
+				score = Math.round(score + 1 * enemy.speed); //why 1 * ??
+				//show single score
+				pointsText = { mark: '+', points: score - scoreBefore, posX: scoreTextX, posY: scoreTextY };
 
 				if (livebar.live + 7 * enemy.speed >= 100) {
 					livebar.live = 100;
 				} else {
 					livebar.live += 7 * enemy.speed;
 				}
+			} else {
+				//if vegetable
+				livebar.live -= 7 * enemy.speed;
+				pointsText = { mark: '-', points: 7 * enemy.speed, posX: scoreTextX, posY: scoreTextY };
 			}
 
-			ctx.clearRect(livebar.positionX - 70, livebar.positionY, 500, 40);
 			createEnemy(false);
 		}
 	});
-	level = Math.round(score / 100) + 1;
+	level = Math.floor(score / 100) + 1;
+	return pointsText;
 }
 
 function drawTextData() {
@@ -378,18 +420,25 @@ function drawTextData() {
 	ctx.fillText('Live:', livebar.positionX - 70, livebar.positionY + 15);
 	if (livebar.live >= 0) {
 		livebar.live -= livebar.speed * level;
+		canvas.style.backgroundColor = 'antiquewhite';
+		if (livebar.live < 35) {
+			canvas.style.backgroundColor = '#ffd4d4';
+		}
+		if (livebar.live < 15) {
+			canvas.style.backgroundColor = '#fb9b9b';
+		}
+
 		for (var j = 1; j <= livebar.live; j++) {
 			drawLiveBar(j);
 		}
 	} else {
 		//You loose!
-		var scores = [];
-		scores = getHighScores();
-		scores.push(score.toString());
+		var scores = getHighScores();
+		scores += ',' + score.toString();
 		localStorage.setItem('scores', scores);
 
-		cancelAnimationFrame(mainAnimationFrame);
 		canvas.removeEventListener('click', makeAction, false);
+		cancelAnimationFrame(mainAnimationFrame);
 		ctx.fillStyle = '#AA0505';
 		ctx.font = '60px monospace';
 		ctx.fillText('GAME OVER', canvas.height / 2, canvas.width / 2 - 300);
@@ -397,12 +446,6 @@ function drawTextData() {
 }
 
 function createEnemy(bonusType) {
-	/*
-		TODO:
-		- przeciwnicy nadlatują z lewej lub prawej, na losowej wysokości z różną prędkością - DONE
-		- grafika dla przeciwników - DONE
-		- dwa rodzaje przeciwników: mięsne i warzywne. Mięsne dodają punktów i życia, warzywne odbierają życie.
-	*/
 	var enemy = {
 		speed: 1,
 		speedDirect: 1,
@@ -429,11 +472,6 @@ function createEnemy(bonusType) {
 	//create bonus enemy
 	if (enemy.bonusType === true) {
 		enemy.imageStage = 14;
-		// ctx.save();
-		// ctx.arc(enemy.posX, enemy.posY, 15, 0, 2 * Math.PI);
-		// ctx.strokeStyle = '#000099';
-		// ctx.stroke();
-		// ctx.restore();
 	} else {
 		enemy.imageStage = getRandomInt(0, 13);
 	}
@@ -453,7 +491,7 @@ function drawEnemies() {
 		if (enemy.posX > canvas.width + 15 || enemy.posX < -15) {
 			enemies.splice(index, 1);
 			if (enemy.imageStage !== 14 && enemy.bonusType === false && enemies.length <= 20) {
-				if (getRandomInt(1, 100) === 1) {
+				if (getRandomInt(1, 80) === 1) {
 					createEnemy(true);
 				} else {
 					createEnemy(false);
@@ -486,9 +524,6 @@ function animate() {
 
 	if (elapsed > fpsInterval) {
 		then = now - elapsed % fpsInterval;
-		var sinceStart = now - startTime;
-		var currentFps = Math.round(1000 / (sinceStart / ++frameCount) * 100) / 100;
-		results.innerHTML = currentFps + ' fps.';
 		gameLoop();
 	}
 }
@@ -508,14 +543,3 @@ function getMousePos(canvas, event) {
 function isInside(pos, rect) {
 	return pos.x > rect.x && pos.x < rect.x + rect.width && pos.y < rect.y + rect.height && pos.y > rect.y;
 }
-
-// window.requestAnimFrame = (function() {
-// 	return  window.requestAnimationFrame       ||
-// 			window.webkitRequestAnimationFrame ||
-// 			window.mozRequestAnimationFrame    ||
-// 			window.oRequestAnimationFrame      ||
-// 			window.msRequestAnimationFrame     ||
-// 			function(/* function */ callback, /* DOMElement */ element){
-// 				window.setTimeout(callback, 1000 / 60);
-// 			};
-// })();
