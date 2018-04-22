@@ -21,6 +21,7 @@ TODO:
 var score = 0,
 	enemiesNumber = 20,
 	level = 1,
+	gameOver = false,
 	hero = {
 		heroSliceX: 0,
 		heroSliceY: 0,
@@ -223,6 +224,18 @@ function gameLoop() {
 }
 
 function drawHero() {
+	ctx.save();
+
+	ctx.shadowColor = '#8dc771';
+	if (livebar.live < 35) {
+		ctx.shadowColor = '#cbd45d';
+	}
+	if (livebar.live < 15) {
+		ctx.shadowColor = '#c1a923';
+	}
+	ctx.shadowBlur = 10;
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
 	/*
 		TODO:
 		-- zasięg postaci - jak daleko może chwycić wrogów (zaznaczyć na mapie okręgiem)
@@ -255,6 +268,8 @@ function drawHero() {
 	ctx.closePath();
 	ctx.fillStyle = '#7c2c04';
 	ctx.fill();
+
+	ctx.restore();
 }
 
 function drawHeroBeam() {
@@ -292,27 +307,29 @@ function drawHeroBeam() {
 }
 
 function makeAction(event) {
-	var mousePos = getMousePos(canvas, event);
-	//correct the cords (45 px), so clicked cords was the middle of head
-	hero.moveToX = mousePos.x - 45;
-	hero.moveToY = mousePos.y - 45;
+	if (!gameOver) {
+		var mousePos = getMousePos(canvas, event);
+		//correct the cords (45 px), so clicked cords was the middle of head
+		hero.moveToX = mousePos.x - 45;
+		hero.moveToY = mousePos.y - 45;
 
-	var goingThereSpeedMultipler = 3;
-	var goingBackSpeedMultipler = 3;
-	var framesToStayThere = 20;
-	var makeActionframe;
-	var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
-	var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
-	hero.animationState = 'goingThere';
+		var goingThereSpeedMultipler = 3;
+		var goingBackSpeedMultipler = 3;
+		var framesToStayThere = 20;
+		var makeActionframe;
+		var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
+		var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
+		hero.animationState = 'goingThere';
 
-	goBack();
+		goBack();
+	}
 	function goBack() {
 		canvas.removeEventListener('click', makeAction, false);
 		makeActionframe = requestAnimationFrame(goBack);
 		/* 
 			TODO:
 			- hero image - turn head to the attack direction
-		*/
+			*/
 		hero.heroSliceX = 124;
 		drawHeroBeam();
 		if (hero.animationState == 'goingThere') {
@@ -325,7 +342,7 @@ function makeAction(event) {
 				hero.heroPositionX = hero.moveToX;
 				hero.heroPositionY = hero.moveToY;
 			}
-		} else if (hero.animationState == 'beenThere') {
+		} else if (hero.animationState == 'beenThere' && !gameOver) {
 			if (framesToStayThere >= 0) {
 				pointsText = checkColision(hero.heroPositionX, hero.heroPositionY);
 				if (pointsText.points !== 0) {
@@ -343,7 +360,7 @@ function makeAction(event) {
 				pointsText = { mark: '+', points: 0, posX: 0, posY: 0 };
 				hero.animationState = 'goingBack';
 			}
-		} else if (hero.animationState == 'goingBack') {
+		} else if (hero.animationState == 'goingBack' && !gameOver) {
 			hero.heroSliceX = 0;
 			if (hero.heroPositionX == hero.positionX) {
 				hero.animationState = 'back';
@@ -436,9 +453,9 @@ function drawTextData() {
 		var scores = getHighScores();
 		scores += ',' + score.toString();
 		localStorage.setItem('scores', scores);
-
-		canvas.removeEventListener('click', makeAction, false);
+		gameOver = true;
 		cancelAnimationFrame(mainAnimationFrame);
+		canvas.removeEventListener('click', makeAction, false);
 		ctx.fillStyle = '#AA0505';
 		ctx.font = '60px monospace';
 		ctx.fillText('GAME OVER', canvas.height / 2, canvas.width / 2 - 300);
@@ -486,7 +503,15 @@ function createEnemies(enemiesNumber, bonusType) {
 }
 function drawEnemies() {
 	enemies.forEach(function(enemy, index) {
+		if (enemy.imageStage === 14) {
+			ctx.save();
+			ctx.shadowColor = '#00ff00';
+			ctx.shadowBlur = 40;
+			ctx.shadowOffsetX = 0;
+			ctx.shadowOffsetY = 0;
+		}
 		ctx.drawImage(enemiesSprite, enemy.imageStage * 15, 0, 15, 15, enemy.posX, enemy.posY, 15, 15);
+		ctx.restore();
 		enemy.posX += enemy.speedDirect;
 		if (enemy.posX > canvas.width + 15 || enemy.posX < -15) {
 			enemies.splice(index, 1);
