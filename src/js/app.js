@@ -131,6 +131,10 @@ function drawButtons() {
 				canvas.removeEventListener('click', _func, false);
 				drawHighscores(getHighScores());
 			}
+			if (isInside(mousePos, playInstructionsButton)) {
+				canvas.removeEventListener('click', _func, false);
+				playInstructions();
+			}
 		},
 		false
 	);
@@ -190,20 +194,55 @@ function drawHighscores(scores) {
 	ctx.fillStyle = '#ffffff';
 	ctx.font = '30px monospace';
 	ctx.fillText('Highscores:', canvas.width / 2 - 80, 100);
-	var sorterScores = scores.split(',');
-	sorterScores.sort(function(a, b) {
-		return b - a;
-	});
-	sorterScores.forEach(function(score, index) {
-		if (index < 15) {
-			ctx.fillText(index + 1 + '. ' + score, 100, 150 + 30 * index);
-		} else if (index < 30) {
-			ctx.fillText(index + 1 + '. ' + score, 400, 150 + 30 * (index - 15));
-		}
-	});
+	if (scores.length > 0) {
+		var sortedScores = scores.split(',');
+		sortedScores.sort(function(a, b) {
+			return b - a;
+		});
+		sortedScores.forEach(function(score, index) {
+			if (index < 15) {
+				ctx.fillText(index + 1 + '. ' + score, 100, 150 + 30 * index);
+			} else if (index < 30) {
+				ctx.fillText(index + 1 + '. ' + score, 400, 150 + 30 * (index - 15));
+			}
+		});
+	}
 }
 
 function playInstructions() {
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	var closeButton = {
+		x: canvas.width - 80,
+		y: 75,
+		width: 50,
+		height: 50,
+	};
+	ctx.moveTo(canvas.width - 75, 75);
+	ctx.lineTo(canvas.width - 90, 90);
+	ctx.moveTo(canvas.width - 90, 75);
+	ctx.lineTo(canvas.width - 75, 90);
+	ctx.strokeStyle = '#000000';
+	ctx.stroke();
+	canvas.addEventListener('click', function _func() {
+		var mousePos = getMousePos(canvas, event);
+		if (isInside(mousePos, closeButton)) {
+			canvas.removeEventListener('click', _func, false);
+			init();
+		}
+	});
+
+	ctx.fillStyle = '#ffffff';
+	ctx.font = '24px monospace';
+	var textPositionX = 150;
+	ctx.fillText('You are a little hungry plant.', textPositionX, 100);
+	ctx.fillText('Your goal is to satisfy your hunger!', textPositionX, 150);
+	ctx.font = '20px monospace';
+	var textPositionY = 200;
+	ctx.fillText('Rules:', textPositionX, (textPositionY += 30));
+	ctx.fillText('1. Eat meat!', textPositionX, (textPositionY += 30));
+	ctx.fillText("2. Don't eat plants! (that's a cannibalism)", textPositionX, (textPositionY += 30));
+	ctx.fillText("3. If you don't eat you're gonna wither until you die!", textPositionX, (textPositionY += 30));
+	ctx.fillText('4. Look for a pig. Pig is good. Pig is yummy.', textPositionX, (textPositionY += 30));
 	/* 
 		TODO
 	*/
@@ -287,6 +326,7 @@ function drawHeroBeam() {
 			hero.heroPositionY + 100
 		);
 	}
+	ctx.strokeStyle = '#285a10';
 	ctx.lineTo(hero.heroPositionX + 31, hero.heroPositionY + 100);
 	if (hero.moveToY < hero.positionY) {
 		ctx.bezierCurveTo(
@@ -298,6 +338,7 @@ function drawHeroBeam() {
 			hero.positionY + 100
 		);
 	}
+	ctx.strokeStyle = '#285a10';
 	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
 	ctx.strokeStyle = '#020601';
 	ctx.stroke();
@@ -309,19 +350,21 @@ function drawHeroBeam() {
 function makeAction(event) {
 	if (!gameOver) {
 		var mousePos = getMousePos(canvas, event);
-		//correct the cords (45 px), so clicked cords was the middle of head
-		hero.moveToX = mousePos.x - 45;
-		hero.moveToY = mousePos.y - 45;
+		if (mousePos.y < canvas.height - 100) {
+			//correct the cords (45 px), so clicked cords was the middle of head
+			hero.moveToX = mousePos.x - 45;
+			hero.moveToY = mousePos.y - 45;
 
-		var goingThereSpeedMultipler = 3;
-		var goingBackSpeedMultipler = 3;
-		var framesToStayThere = 20;
-		var makeActionframe;
-		var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
-		var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
-		hero.animationState = 'goingThere';
+			var goingThereSpeedMultipler = 3;
+			var goingBackSpeedMultipler = 3;
+			var framesToStayThere = 20;
+			var makeActionframe;
+			var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
+			var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
+			hero.animationState = 'goingThere';
 
-		goBack();
+			goBack();
+		}
 	}
 	function goBack() {
 		canvas.removeEventListener('click', makeAction, false);
@@ -330,7 +373,7 @@ function makeAction(event) {
 			TODO:
 			- hero image - turn head to the attack direction
 			*/
-		hero.heroSliceX = 124;
+		hero.heroSliceX = 62;
 		drawHeroBeam();
 		if (hero.animationState == 'goingThere') {
 			if (hero.heroPositionX == hero.moveToX) {
@@ -451,7 +494,11 @@ function drawTextData() {
 	} else {
 		//You loose!
 		var scores = getHighScores();
-		scores += ',' + score.toString();
+		if (scores.length > 0) {
+			scores += ',' + score.toString();
+		} else {
+			scores = score.toString();
+		}
 		localStorage.setItem('scores', scores);
 		gameOver = true;
 		cancelAnimationFrame(mainAnimationFrame);
@@ -474,6 +521,20 @@ function createEnemy(bonusType) {
 		imageStage: 1,
 		bonusType: bonusType,
 	};
+
+	if (level >= 2) {
+		enemy.vMin = 1;
+	}
+
+	if (level >= 5) {
+		enemy.vMin = 1.5;
+		enemy.vMax = 4.5;
+	}
+
+	if (level >= 7) {
+		enemy.vMin = 2;
+		enemy.vMax = 4.5;
+	}
 
 	enemy.direction = getRandomInt(0, 2) - 1;
 	if (enemy.direction === 0) enemy.direction = -1;
