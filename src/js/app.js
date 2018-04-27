@@ -1,6 +1,6 @@
 'use strict';
 
-/* eslint-disable no-unused-vars */
+
 
 var canvas = document.getElementById('game');
 canvas.style.border = '10px solid #0a0a0a';
@@ -13,10 +13,8 @@ mainHero.src = 'hero_sprite.png';
 var enemiesSprite = new Image();
 enemiesSprite.src = 'food_sprite.png';
 
-/*
-TODO:
-- split hero image into parts
-*/
+var kitchenBg = new Image();
+kitchenBg.src = 'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/4QMraHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjMtYzAxMSA2Ni4xNDU2NjEsIDIwMTIvMDIvMDYtMTQ6NTY6MjcgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzYgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjYxNkNDRDQ3NEE1OTExRTg4MEIzQzkwNTg0NjAyMDE2IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjYxNkNDRDQ4NEE1OTExRTg4MEIzQzkwNTg0NjAyMDE2Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NjE2Q0NENDU0QTU5MTFFODgwQjNDOTA1ODQ2MDIwMTYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NjE2Q0NENDY0QTU5MTFFODgwQjNDOTA1ODQ2MDIwMTYiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQ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';
 
 var score = 0,
 	enemiesNumber = 20,
@@ -35,6 +33,7 @@ var score = 0,
 		animationDelay: 50,
 		animationState: 'goingThere',
 		actionListener: null,
+		potColor: '#7c2c04'
 	},
 	livebar = {
 		live: 100,
@@ -48,25 +47,18 @@ var score = 0,
 	pointsText = { mark: '+', points: 0, posX: 0, posY: 0 };
 
 var mainAnimationFrame,
-	stop = false,
-	frameCount = 0,
-	results = document.querySelector('#fps'),
-	fps,
 	fpsInterval,
 	startTime,
 	now,
 	then,
 	elapsed;
 
+	
 function init() {
-	/*
-	TODO:
-	- licznik punktów (+ zapis w localstorage) - DONE
-	- ekran startowy gry (+ komiks przedstawiający fabułę)
-	*/
+	ctx.save();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	canvas.style.backgroundColor = '#61c46a';
-
+	ctx.restore();
 	drawLogo();
 	drawButtons();
 }
@@ -111,14 +103,6 @@ function drawButtons() {
 	};
 	generateButton(showHighscoresButton, 'HIGHSCORES', -55, 150, 'small');
 
-	var aboutButton = {
-		x: canvas.width / 2 - 100,
-		y: canvas.height / 2 + 180,
-		width: 200,
-		height: 50,
-	};
-	generateButton(aboutButton, 'ABOUT', -30, 210, 'small');
-
 	canvas.addEventListener(
 		'click',
 		function _func() {
@@ -130,6 +114,10 @@ function drawButtons() {
 			if (isInside(mousePos, showHighscoresButton)) {
 				canvas.removeEventListener('click', _func, false);
 				drawHighscores(getHighScores());
+			}
+			if (isInside(mousePos, playInstructionsButton)) {
+				canvas.removeEventListener('click', _func, false);
+				playInstructions();
 			}
 		},
 		false
@@ -190,60 +178,76 @@ function drawHighscores(scores) {
 	ctx.fillStyle = '#ffffff';
 	ctx.font = '30px monospace';
 	ctx.fillText('Highscores:', canvas.width / 2 - 80, 100);
-	var sorterScores = scores.split(',');
-	sorterScores.sort(function(a, b) {
-		return b - a;
-	});
-	sorterScores.forEach(function(score, index) {
-		if (index < 15) {
-			ctx.fillText(index + 1 + '. ' + score, 100, 150 + 30 * index);
-		} else if (index < 30) {
-			ctx.fillText(index + 1 + '. ' + score, 400, 150 + 30 * (index - 15));
-		}
-	});
+	if (scores.length > 0) {
+		var sortedScores = scores.split(',');
+		sortedScores.sort(function(a, b) {
+			return b - a;
+		});
+		sortedScores.forEach(function(score, index) {
+			if (index < 15) {
+				ctx.fillText(index + 1 + '. ' + score, 100, 150 + 30 * index);
+			} else if (index < 30) {
+				ctx.fillText(index + 1 + '. ' + score, 400, 150 + 30 * (index - 15));
+			}
+		});
+	}
 }
 
 function playInstructions() {
-	/* 
-		TODO
-	*/
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	var closeButton = {
+		x: canvas.width - 80,
+		y: 75,
+		width: 50,
+		height: 50,
+	};
+	ctx.moveTo(canvas.width - 75, 75);
+	ctx.lineTo(canvas.width - 90, 90);
+	ctx.moveTo(canvas.width - 90, 75);
+	ctx.lineTo(canvas.width - 75, 90);
+	ctx.strokeStyle = '#000000';
+	ctx.stroke();
+	canvas.addEventListener('click', function _func() {
+		var mousePos = getMousePos(canvas, event);
+		if (isInside(mousePos, closeButton)) {
+			canvas.removeEventListener('click', _func, false);
+			init();
+		}
+	});
+
+	ctx.fillStyle = '#ffffff';
+	ctx.font = '24px monospace';
+	var textPositionX = 150;
+	ctx.fillText('You are a little hungry plant.', textPositionX, 100);
+	ctx.fillText('Your goal is to satisfy your hunger!', textPositionX, 150);
+	ctx.font = '20px monospace';
+	var textPositionY = 200;
+	ctx.fillText('Rules:', textPositionX, (textPositionY += 30));
+	ctx.fillText('1. Eat meat!', textPositionX, (textPositionY += 30));
+	ctx.fillText('2. Don\'t eat plants! (that\'s a cannibalism)', textPositionX, (textPositionY += 30));
+	ctx.fillText('3. If you don\'t eat you\'re gonna wither until you die!', textPositionX, (textPositionY += 30));
+	ctx.fillText('4. Look for a pig. Pig is good. Pig is yummy.', textPositionX, (textPositionY += 30));
+
 }
 
 function startGame() {
-	canvas.style.backgroundColor = 'antiquewhite';
-	createEnemies(enemiesNumber, false);
+	createEnemies(enemiesNumber);
 	canvas.addEventListener('click', makeAction, false);
 	startAnimating(60);
 }
 
 function gameLoop() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	drawHero();
+	ctx.drawImage(kitchenBg,0, 0, 400, 311, 0, 0, canvas.width, canvas.height);
 	drawEnemies();
+	drawHero();
 	drawTextData();
 }
 
 function drawHero() {
-	ctx.save();
 
-	ctx.shadowColor = '#8dc771';
-	if (livebar.live < 35) {
-		ctx.shadowColor = '#cbd45d';
-	}
-	if (livebar.live < 15) {
-		ctx.shadowColor = '#c1a923';
-	}
-	ctx.shadowBlur = 10;
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = 0;
-	/*
-		TODO:
-		-- zasięg postaci - jak daleko może chwycić wrogów (zaznaczyć na mapie okręgiem)
-		-- szybkość postaci - jak szybko głowa postaci dosięgnie
-	*/
 	speedTick += 1;
 
-	ctx.clearRect(hero.heroPositionX, hero.heroPositionY, 62, 100);
 	ctx.drawImage(mainHero, hero.heroSliceX, hero.heroSliceY, 62, 100, hero.heroPositionX, hero.heroPositionY, 62, 100);
 
 	if (speedTick % 10 === 0 || speedTick === 0) {
@@ -266,10 +270,9 @@ function drawHero() {
 	ctx.lineTo(hero.positionX - 29, canvas.height);
 	ctx.lineTo(hero.positionX - 39, hero.positionY + 110);
 	ctx.closePath();
-	ctx.fillStyle = '#7c2c04';
+	ctx.fillStyle = hero.potColor;
 	ctx.fill();
 
-	ctx.restore();
 }
 
 function drawHeroBeam() {
@@ -287,6 +290,7 @@ function drawHeroBeam() {
 			hero.heroPositionY + 100
 		);
 	}
+	ctx.strokeStyle = '#285a10';
 	ctx.lineTo(hero.heroPositionX + 31, hero.heroPositionY + 100);
 	if (hero.moveToY < hero.positionY) {
 		ctx.bezierCurveTo(
@@ -298,6 +302,7 @@ function drawHeroBeam() {
 			hero.positionY + 100
 		);
 	}
+	ctx.strokeStyle = '#285a10';
 	ctx.lineTo(hero.positionX + 16, hero.positionY + 100);
 	ctx.strokeStyle = '#020601';
 	ctx.stroke();
@@ -309,19 +314,21 @@ function drawHeroBeam() {
 function makeAction(event) {
 	if (!gameOver) {
 		var mousePos = getMousePos(canvas, event);
-		//correct the cords (45 px), so clicked cords was the middle of head
-		hero.moveToX = mousePos.x - 45;
-		hero.moveToY = mousePos.y - 45;
+		if (mousePos.y < canvas.height - 100) {
+			//correct the cords (45 px), so clicked cords was the middle of head
+			hero.moveToX = mousePos.x - 45;
+			hero.moveToY = mousePos.y - 45;
 
-		var goingThereSpeedMultipler = 3;
-		var goingBackSpeedMultipler = 3;
-		var framesToStayThere = 20;
-		var makeActionframe;
-		var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
-		var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
-		hero.animationState = 'goingThere';
+			var goingThereSpeedMultipler = 3;
+			var goingBackSpeedMultipler = 3;
+			var framesToStayThere = 20;
+			var makeActionframe;
+			var actionJumpX = (hero.moveToX - hero.heroPositionX) / hero.speed;
+			var actionJumpY = (hero.moveToY - hero.heroPositionY) / hero.speed;
+			hero.animationState = 'goingThere';
 
-		goBack();
+			goBack();
+		}
 	}
 	function goBack() {
 		canvas.removeEventListener('click', makeAction, false);
@@ -330,7 +337,7 @@ function makeAction(event) {
 			TODO:
 			- hero image - turn head to the attack direction
 			*/
-		hero.heroSliceX = 124;
+		hero.heroSliceX = 62;
 		drawHeroBeam();
 		if (hero.animationState == 'goingThere') {
 			if (hero.heroPositionX == hero.moveToX) {
@@ -348,11 +355,15 @@ function makeAction(event) {
 				if (pointsText.points !== 0) {
 					ctx.font = '16px monospace';
 					if (pointsText.mark === '-') {
+						ctx.save();
 						ctx.fillStyle = '#990000';
 						ctx.fillText('Live ' + pointsText.mark + pointsText.points, pointsText.posX, pointsText.posY);
+						ctx.restore();
 					} else {
+						ctx.save();
 						ctx.fillStyle = '#009900';
 						ctx.fillText(pointsText.mark + pointsText.points, pointsText.posX, pointsText.posY);
+						ctx.restore();
 					}
 				}
 				framesToStayThere--;
@@ -397,12 +408,12 @@ function checkColision(heroHeadPositionX, heroHeadPositionY) {
 			var scoreTextY = enemy.posY - 50;
 			enemies.splice(index, 1);
 			if (enemy.imageStage === 14) {
-				createEnemies(200, false);
+				createEnemies(200);
 				score += 100;
 			}
 			if (enemy.imageStage <= 9 || enemy.imageStage === 14) {
 				//if no vegetable
-				score = Math.round(score + 1 * enemy.speed); //why 1 * ??
+				score = Math.round(score + 1 * enemy.speed);
 				//show single score
 				pointsText = { mark: '+', points: score - scoreBefore, posX: scoreTextX, posY: scoreTextY };
 
@@ -425,6 +436,7 @@ function checkColision(heroHeadPositionX, heroHeadPositionY) {
 }
 
 function drawTextData() {
+	ctx.save();
 	ctx.fillStyle = '#000099';
 	ctx.font = '20px monospace';
 	ctx.fillText('Level: ' + level, canvas.width - 150, livebar.positionY + 15);
@@ -437,12 +449,17 @@ function drawTextData() {
 	ctx.fillText('Live:', livebar.positionX - 70, livebar.positionY + 15);
 	if (livebar.live >= 0) {
 		livebar.live -= livebar.speed * level;
-		canvas.style.backgroundColor = 'antiquewhite';
 		if (livebar.live < 35) {
-			canvas.style.backgroundColor = '#ffd4d4';
+			ctx.save();
+			ctx.fillStyle = 'rgba(242, 10, 10, 0.1)';
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			ctx.restore();
 		}
 		if (livebar.live < 15) {
-			canvas.style.backgroundColor = '#fb9b9b';
+			ctx.save();
+			ctx.fillStyle = 'rgba(242, 10, 10, 0.3)';
+			ctx.fillRect(0,0,canvas.width,canvas.height);
+			ctx.restore();
 		}
 
 		for (var j = 1; j <= livebar.live; j++) {
@@ -450,16 +467,23 @@ function drawTextData() {
 		}
 	} else {
 		//You loose!
-		var scores = getHighScores();
-		scores += ',' + score.toString();
-		localStorage.setItem('scores', scores);
-		gameOver = true;
 		cancelAnimationFrame(mainAnimationFrame);
 		canvas.removeEventListener('click', makeAction, false);
+
+		var scores = getHighScores();
+		if (scores.length > 0) {
+			scores += ',' + score.toString();
+		} else {
+			scores = score.toString();
+		}
+		localStorage.setItem('scores', scores);
+		gameOver = true;
 		ctx.fillStyle = '#AA0505';
 		ctx.font = '60px monospace';
 		ctx.fillText('GAME OVER', canvas.height / 2, canvas.width / 2 - 300);
+
 	}
+	ctx.restore();
 }
 
 function createEnemy(bonusType) {
@@ -474,6 +498,20 @@ function createEnemy(bonusType) {
 		imageStage: 1,
 		bonusType: bonusType,
 	};
+
+	if (level >= 2) {
+		enemy.vMin = 1;
+	}
+
+	if (level >= 5) {
+		enemy.vMin = 1.5;
+		enemy.vMax = 4.5;
+	}
+
+	if (level >= 7) {
+		enemy.vMin = 2;
+		enemy.vMax = 4.5;
+	}
 
 	enemy.direction = getRandomInt(0, 2) - 1;
 	if (enemy.direction === 0) enemy.direction = -1;
@@ -496,9 +534,9 @@ function createEnemy(bonusType) {
 	enemies.push(enemy);
 }
 
-function createEnemies(enemiesNumber, bonusType) {
+function createEnemies(enemiesNumber) {
 	for (var i = 0; i < enemiesNumber; i++) {
-		createEnemy(bonusType);
+		createEnemy(false);
 	}
 }
 function drawEnemies() {
@@ -527,11 +565,13 @@ function drawEnemies() {
 }
 
 function drawLiveBar(livePercent) {
+	ctx.save();
 	ctx.strokeStyle = '#000099';
 	ctx.strokeRect(livebar.positionX, livebar.positionY, 100, 20);
-
+	
 	ctx.fillStyle = livebar.colors[Math.round(livebar.live / 25)];
 	ctx.fillRect(livebar.positionX + livePercent, livebar.positionY, 1, 20);
+	ctx.restore();
 }
 
 // Helpers
