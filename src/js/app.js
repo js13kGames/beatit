@@ -15,6 +15,9 @@ var kitchenBg = new Image();
 kitchenBg.src =
 	'data:image/jpeg;base64,/9j/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/sABFEdWNreQABAAQAAAAeAAD/4QMraHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49Iu+7vyIgaWQ9Ilc1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCI/PiA8eDp4bXBtZXRhIHhtbG5zOng9ImFkb2JlOm5zOm1ldGEvIiB4OnhtcHRrPSJBZG9iZSBYTVAgQ29yZSA1LjMtYzAxMSA2Ni4xNDU2NjEsIDIwMTIvMDIvMDYtMTQ6NTY6MjcgICAgICAgICI+IDxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+IDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzYgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOjYxNkNDRDQ3NEE1OTExRTg4MEIzQzkwNTg0NjAyMDE2IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOjYxNkNDRDQ4NEE1OTExRTg4MEIzQzkwNTg0NjAyMDE2Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6NjE2Q0NENDU0QTU5MTFFODgwQjNDOTA1ODQ2MDIwMTYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NjE2Q0NENDY0QTU5MTFFODgwQjNDOTA1ODQ2MDIwMTYiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz7/7gAOQWRvYmUAZMAAAAAB/9sAhAAQCwsLDAsQDAwQFw8NDxcbFBAQ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';
 
+var bigHeroIntro = new Image();
+bigHeroIntro.src = 'main.png';
+
 var score = 0,
 	enemiesNumber = 20,
 	level = 1,
@@ -50,10 +53,20 @@ var mainAnimationFrame, fpsInterval, startTime, now, then, elapsed;
 function init() {
 	ctx.save();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	canvas.style.backgroundColor = '#61c46a';
+	canvas.style.backgroundColor = '#6c6';
 	ctx.restore();
+	drawInfo();
 	drawLogo();
 	drawButtons();
+}
+
+function drawInfo() {
+	ctx.save();
+	ctx.font = 'normal 12px Arial';
+	ctx.fillStyle = '#ffffff';
+	ctx.fillText('Kat', canvas.width - 50, canvas.height - 20);
+	ctx.drawImage(bigHeroIntro, 120, canvas.height - 155, 100, 155);
+	ctx.restore();
 }
 
 function drawLogo() {
@@ -75,41 +88,44 @@ function drawButtons() {
 	var startButton = {
 		x: canvas.width / 2 - 120,
 		y: canvas.height / 2 - 25,
-		width: 240,
+		width: 260,
 		height: 50,
 	};
 	generateButton(startButton, 'START GAME', -80, 8, 'big');
 
 	var playInstructionsButton = {
-		x: canvas.width / 2 - 100,
+		x: canvas.width / 2 - 110,
 		y: canvas.height / 2 + 60,
-		width: 200,
+		width: 240,
 		height: 50,
 	};
 	generateButton(playInstructionsButton, 'SHOW INSTRUCTIONS', -92, 90, 'small');
 
 	var showHighscoresButton = {
-		x: canvas.width / 2 - 100,
+		x: canvas.width / 2 - 110,
 		y: canvas.height / 2 + 120,
-		width: 200,
+		width: 240,
 		height: 50,
 	};
 	generateButton(showHighscoresButton, 'HIGHSCORES', -55, 150, 'small');
 
 	canvas.addEventListener(
 		'click',
-		function _func() {
+		function _func(event) {
 			var mousePos = getMousePos(canvas, event);
 			if (isInside(mousePos, startButton)) {
 				canvas.removeEventListener('click', _func, false);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				startGame();
 			}
 			if (isInside(mousePos, showHighscoresButton)) {
 				canvas.removeEventListener('click', _func, false);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				drawHighscores(getHighScores());
 			}
 			if (isInside(mousePos, playInstructionsButton)) {
 				canvas.removeEventListener('click', _func, false);
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
 				playInstructions();
 			}
 		},
@@ -118,22 +134,24 @@ function drawButtons() {
 }
 
 function generateButton(btnObject, btnText, textOffsetX, textOffsetY, btnStyle) {
+	ctx.save();
 	var btn = btnObject;
 
 	ctx.fillStyle = '#61c46a';
 	ctx.fillRect(btn.x, btn.y, btn.width, btn.height);
 	if (btnStyle === 'small') {
 		ctx.lineWidth = 2;
-		ctx.font = '20px monospace';
+		ctx.font = '20px Lucida Console';
 	} else {
 		ctx.lineWidth = 4;
-		ctx.font = '30px monospace';
+		ctx.font = '30px Lucida Console';
 	}
 	ctx.strokeStyle = '#ffffff';
 	ctx.strokeRect(btn.x, btn.y, btn.width, btn.height);
 
 	ctx.fillStyle = '#ffffff';
 	ctx.fillText(btnText, canvas.width / 2 + textOffsetX, canvas.height / 2 + textOffsetY);
+	ctx.restore();
 }
 
 function getHighScores() {
@@ -143,6 +161,7 @@ function getHighScores() {
 }
 
 function drawHighscores(scores) {
+	ctx.save();
 	ctx.fillStyle = '#61c46a';
 	ctx.strokeStyle = '#000000';
 	ctx.fillRect(50, 50, canvas.width - 100, canvas.height - 100);
@@ -160,7 +179,7 @@ function drawHighscores(scores) {
 	ctx.lineTo(canvas.width - 75, 90);
 	ctx.strokeStyle = '#000000';
 	ctx.stroke();
-	canvas.addEventListener('click', function _func() {
+	canvas.addEventListener('click', function _func(event) {
 		var mousePos = getMousePos(canvas, event);
 		if (isInside(mousePos, closeButton)) {
 			canvas.removeEventListener('click', _func, false);
@@ -184,9 +203,11 @@ function drawHighscores(scores) {
 			}
 		});
 	}
+	ctx.restore();
 }
 
 function playInstructions() {
+	ctx.save();
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	var closeButton = {
 		x: canvas.width - 80,
@@ -200,7 +221,7 @@ function playInstructions() {
 	ctx.lineTo(canvas.width - 75, 90);
 	ctx.strokeStyle = '#000000';
 	ctx.stroke();
-	canvas.addEventListener('click', function _func() {
+	canvas.addEventListener('click', function _func(event) {
 		var mousePos = getMousePos(canvas, event);
 		if (isInside(mousePos, closeButton)) {
 			canvas.removeEventListener('click', _func, false);
@@ -220,6 +241,7 @@ function playInstructions() {
 	ctx.fillText('2. Don\'t eat plants! (that\'s a cannibalism)', textPositionX, (textPositionY += 30));
 	ctx.fillText('3. If you don\'t eat you\'re gonna wither until you die!', textPositionX, (textPositionY += 30));
 	ctx.fillText('4. Look for a pig. Pig is good. Pig is yummy.', textPositionX, (textPositionY += 30));
+	ctx.restore();
 }
 
 function startGame() {
@@ -234,6 +256,31 @@ function gameLoop() {
 	drawEnemies();
 	drawHero();
 	drawTextData();
+	drawExitButton();
+}
+
+function drawExitButton() {
+	var exitButton = {
+		x: canvas.width - 80,
+		y: canvas.height - 20,
+		width: 150,
+		height: 50,
+	};
+
+	ctx.fillStyle = '#000000';
+	ctx.font = 'bold 18px Arial';
+	ctx.fillText('QUIT', exitButton.x, exitButton.y);
+
+	canvas.addEventListener(
+		'click',
+		function _func(event) {
+			var mousePos = getMousePos(canvas, event);
+			if (isInside(mousePos, exitButton)) {
+				location.reload();
+			}
+		},
+		false
+	);
 }
 
 function drawHero() {
